@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'dart:developer' as dev;
 
@@ -9,36 +10,28 @@ import 'package:flutter_event/features/auth/data/models/auth.dart';
 import 'package:flutter_event/features/auth/data/models/profile.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthModel> login({
-    required String email,
-    required String password,
-  });
+  Future<AuthModel> login({required String email, required String password});
   Future<AuthModel> register({
     required String fullname,
-    required String email, 
-    required String password
+    required String email,
+    required String password,
   });
   Future<ProfileModel> getProfile();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-
   Dio client;
 
   AuthRemoteDataSourceImpl({required this.client});
 
   @override
-  Future<AuthModel> login({
-    required String email, 
-    required String password
-  }) async {
-    try { 
-      final response = await client.post("${RemoteDataSourceConsts.baseUrl}/api/v1/login",
-        data: {
-          "val": email, 
-          "password": password
-        }
+  Future<AuthModel> login({required String email, required String password}) async {
+    try {
+      final response = await client.post(
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/auth/login",
+        data: {"email": email, "password": password},
       );
+
       Map<String, dynamic> data = response.data;
       AuthModel authModel = AuthModel.fromJson(data);
       return authModel;
@@ -53,18 +46,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<AuthModel> register({
-    required String fullname, 
-    required String email, 
-    required String password
+    required String fullname,
+    required String email,
+    required String password,
   }) async {
     try {
-      final response = await client.post("${RemoteDataSourceConsts.baseUrl}/register",
-        data: {
-          "fullname": fullname,
-          "email": email, 
-          "password": password
-        }
+      debugPrint("${RemoteDataSourceConsts.baseUrl}/api/v1/auth/register");
+
+      final response = await client.post(
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/auth/register",
+        data: {"fullname": fullname, "email": email, "password": password},
       );
+      debugPrint(response.statusMessage);
+      debugPrint(response.statusCode.toString());
       Map<String, dynamic> data = response.data;
       AuthModel authModel = AuthModel.fromJson(data);
       return authModel;
@@ -77,7 +71,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  @override 
+  @override
   Future<ProfileModel> getProfile() async {
     try {
       final response = await client.get("${RemoteDataSourceConsts.baseUrl}/api/v1/profile");
@@ -92,6 +86,4 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw Exception(e.toString());
     }
   }
-
-
 }

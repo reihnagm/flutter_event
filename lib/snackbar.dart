@@ -6,7 +6,7 @@ import 'package:flutter_event/global.dart';
 class ShowSnackbar {
   ShowSnackbar._();
 
-  static snackbarOk(String content) {
+  static void snackbarOk(String content) {
     ScaffoldMessenger.of(navigatorKey.currentState!.context).clearSnackBars();
     ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
       SnackBar(
@@ -30,7 +30,7 @@ class ShowSnackbar {
     );
   }
 
-  static snackbarErr(String content) {
+  static void snackbarErr(String content) {
     ScaffoldMessenger.of(navigatorKey.currentState!.context).clearSnackBars();
     ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
       SnackBar(

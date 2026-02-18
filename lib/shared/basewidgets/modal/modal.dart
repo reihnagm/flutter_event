@@ -364,7 +364,7 @@ class GDialog {
     );
   }
 
-  static quillToolbar({required QuillController controller}) {
+  static Future<dynamic> quillToolbar({required QuillController controller}) {
     return showModalBottomSheet(
       context: navigatorKey.currentContext!,
       builder: (BuildContext context) {

@@ -4,6 +4,8 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:flutter_event/common/helpers/storage.dart';
 import 'package:flutter_event/injection.dart';
 
@@ -18,16 +20,13 @@ import 'package:intl/date_symbol_data_local.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await dotenv.load(fileName: ".env");
   await initializeDateFormatting("id", null);
-
   await StorageHelper.init();
-  
+
   init();
 
-  runApp(MultiProvider(
-    providers: providers,
-    child: const MyApp()
-  ));
+  runApp(MultiProvider(providers: providers, child: const MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -54,26 +53,14 @@ class MyAppState extends State<MyApp> {
       theme: ThemeData(
         fontFamily: 'Montserrat',
         datePickerTheme: DatePickerThemeData(
-          dayStyle: montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
-          yearStyle: montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
-          weekdayStyle: montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
+          dayStyle: montserratRegular.copyWith(fontSize: 13.0),
+          yearStyle: montserratRegular.copyWith(fontSize: 13.0),
+          weekdayStyle: montserratRegular.copyWith(fontSize: 13.0),
         ),
         timePickerTheme: TimePickerThemeData(
-          helpTextStyle: montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
-          dayPeriodTextStyle: montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
-          dialTextStyle:  montserratRegular.copyWith(
-            fontSize: 13.0
-          ),
+          helpTextStyle: montserratRegular.copyWith(fontSize: 13.0),
+          dayPeriodTextStyle: montserratRegular.copyWith(fontSize: 13.0),
+          dialTextStyle: montserratRegular.copyWith(fontSize: 13.0),
         ),
         useMaterial3: true,
       ),

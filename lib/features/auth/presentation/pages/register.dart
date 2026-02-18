@@ -2,9 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter_event/snackbar.dart';
+
+import 'package:flutter_event/common/helpers/enum.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 
+import 'package:flutter_event/features/event/presentation/pages/event_list.dart';
 import 'package:flutter_event/features/auth/presentation/provider/register_notifier.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -17,7 +21,6 @@ class RegisterPage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPage> {
-
   final formKey = GlobalKey<FormState>();
 
   late RegisterNotifier registerNotifier;
@@ -25,23 +28,32 @@ class RegisterPageState extends State<RegisterPage> {
   bool obscure = false;
 
   Future<void> register() async {
-    if(formKey.currentState!.validate()) {
-      await context.read<RegisterNotifier>().register();
-    } 
+    if (formKey.currentState!.validate()) {
+      await registerNotifier.register();
+
+      if (registerNotifier.state == ProviderState.error) {
+        ShowSnackbar.snackbarErr(registerNotifier.message);
+        return;
+      } else {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, EventListPage.route);
+        }
+      }
+    }
   }
 
-  @override 
+  @override
   void initState() {
     super.initState();
 
-    registerNotifier = context.read<RegisterNotifier>();  
+    registerNotifier = context.read<RegisterNotifier>();
 
     registerNotifier.fullnameC = TextEditingController();
     registerNotifier.emailC = TextEditingController();
     registerNotifier.passwordC = TextEditingController();
   }
 
-  @override 
+  @override
   void dispose() {
     registerNotifier.fullnameC.dispose();
     registerNotifier.emailC.dispose();
@@ -57,7 +69,8 @@ class RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         forceMaterialTransparency: true,
         centerTitle: true,
-        title: Text("Register",
+        title: Text(
+          "Register",
           style: montserratRegular.copyWith(
             fontSize: 14.0,
             fontWeight: FontWeight.bold,
@@ -74,37 +87,27 @@ class RegisterPageState extends State<RegisterPage> {
       body: RefreshIndicator.adaptive(
         color: ColorResources.black,
         onRefresh: () {
-          return Future.sync(() {
-
-          });
+          return Future.sync(() {});
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
-
             SliverPadding(
-              padding: const EdgeInsets.only(
-                top: 100.0,
-                bottom: 15.0,
-                left: 25.0,
-                right: 25.0
-              ),
+              padding: const EdgeInsets.only(top: 100.0, bottom: 15.0, left: 25.0, right: 25.0),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-
                   Form(
                     key: formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
                         TextFormField(
                           controller: registerNotifier.fullnameC,
                           cursorColor: ColorResources.black,
                           style: montserratRegular.copyWith(
                             fontSize: 12.0,
-                            color: ColorResources.black
+                            color: ColorResources.black,
                           ),
                           validator: (String? value) {
                             if (value!.isEmpty) {
@@ -116,23 +119,17 @@ class RegisterPageState extends State<RegisterPage> {
                             labelText: "Fullname",
                             labelStyle: montserratRegular.copyWith(
                               fontSize: 12.0,
-                              color: ColorResources.black
+                              color: ColorResources.black,
                             ),
                             focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                               color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             border: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
-                            )
+                              borderSide: BorderSide(color: ColorResources.black),
+                            ),
                           ),
                         ),
 
@@ -143,7 +140,7 @@ class RegisterPageState extends State<RegisterPage> {
                           cursorColor: ColorResources.black,
                           style: montserratRegular.copyWith(
                             fontSize: 12.0,
-                            color: ColorResources.black
+                            color: ColorResources.black,
                           ),
                           validator: (String? value) {
                             if (value!.isEmpty) {
@@ -155,23 +152,17 @@ class RegisterPageState extends State<RegisterPage> {
                             labelText: "E-mail",
                             labelStyle: montserratRegular.copyWith(
                               fontSize: 12.0,
-                              color: ColorResources.black
+                              color: ColorResources.black,
                             ),
                             focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             border: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
-                            )
+                              borderSide: BorderSide(color: ColorResources.black),
+                            ),
                           ),
                         ),
 
@@ -182,7 +173,7 @@ class RegisterPageState extends State<RegisterPage> {
                           cursorColor: ColorResources.black,
                           style: montserratRegular.copyWith(
                             fontSize: 12.0,
-                            color: ColorResources.black
+                            color: ColorResources.black,
                           ),
                           validator: (String? value) {
                             if (value!.isEmpty) {
@@ -198,47 +189,41 @@ class RegisterPageState extends State<RegisterPage> {
                                   obscure = !obscure;
                                 });
                               },
-                              child: obscure 
-                              ? const Icon(Icons.visibility_off) 
-                              : const Icon(Icons.visibility)
+                              child: obscure
+                                  ? const Icon(Icons.visibility_off)
+                                  : const Icon(Icons.visibility),
                             ),
                             labelText: "Password",
                             labelStyle: montserratRegular.copyWith(
                               fontSize: 12.0,
-                              color: ColorResources.black
+                              color: ColorResources.black,
                             ),
                             focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
+                              borderSide: BorderSide(color: ColorResources.black),
                             ),
                             border: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ColorResources.black
-                              )
-                            )
+                              borderSide: BorderSide(color: ColorResources.black),
+                            ),
                           ),
                         ),
-
                       ],
-                    )
+                    ),
                   ),
 
                   const SizedBox(height: 25.0),
 
                   ElevatedButton(
                     onPressed: register,
-                    child: Text('Register',
+                    child: Text(
+                      'Register',
                       style: montserratRegular.copyWith(
                         fontSize: 14.0,
-                        color: ColorResources.black
+                        color: ColorResources.black,
                       ),
-                    )
+                    ),
                   ),
 
                   const SizedBox(height: 15.0),
@@ -247,11 +232,11 @@ class RegisterPageState extends State<RegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-
-                      Text("Already have an account ?",
+                      Text(
+                        "Already have an account ?",
                         style: montserratRegular.copyWith(
                           fontSize: 12.0,
-                          color: ColorResources.black
+                          color: ColorResources.black,
                         ),
                       ),
 
@@ -261,26 +246,23 @@ class RegisterPageState extends State<RegisterPage> {
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child: Text("Login",
+                        child: Text(
+                          "Login",
                           style: montserratRegular.copyWith(
                             fontSize: 12.0,
                             color: ColorResources.black,
                             decoration: TextDecoration.underline,
                           ),
                         ),
-                      )
-
+                      ),
                     ],
-                  )
-
-                ])
+                  ),
+                ]),
               ),
             ),
-        
           ],
         ),
-      )
+      ),
     );
   }
-  
 }

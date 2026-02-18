@@ -1,7 +1,7 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class RemoteDataSourceConsts {
-  static const String baseUrl = 'http://192.168.100.17:3000'; 
-  static const String cloudName = "dilzovvfk";
-  static const String folderCloudName = "flutter_event";
-  // Home 192.168.100.7
-  // Office 192.168.1.14
+  static String baseUrl = dotenv.get("BASE_URL");
+  static String cloudName = dotenv.get("CLOUD_NAME");
+  static String folderCloudName = dotenv.get("FOLDER_CLOUD_NAME");
 }

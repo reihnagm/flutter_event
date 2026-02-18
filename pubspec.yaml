@@ -1,5 +1,5 @@
 name: flutter_event
-description: 'Calendar'
+description: 'Event'
 
 publish_to: 'none'
 
@@ -37,6 +37,7 @@ dependencies:
   flutter_quill: ^11.4.1
   file_picker: ^10.1.9
   flutter_html: ^3.0.0
+  flutter_dotenv: ^6.0.0
 
   # G
   get_it: ^9.2.0
@@ -67,6 +68,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
     - assets/
     - assets/images/
 

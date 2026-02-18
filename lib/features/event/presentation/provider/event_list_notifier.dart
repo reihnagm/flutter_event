@@ -12,13 +12,13 @@ class EventListNotifier with ChangeNotifier {
 
   DateTime selectedDate = DateTime.now();
 
-  List<EventData> _entity = [];
+  final List<EventData> _entity = [];
   List<EventData> get entity => [..._entity];
 
-  List<DateRangeModel> _data = [];
+  final List<DateRangeModel> _data = [];
   List<DateRangeModel> get data => [..._data];
 
-  Map<DateTime, List<Map<String, dynamic>>> _events = {};
+  final Map<DateTime, List<Map<String, dynamic>>> _events = {};
   Map<DateTime, List<Map<String, dynamic>>> get events => {..._events};
 
   List<Map<String, dynamic>> _selectedEvents = [];

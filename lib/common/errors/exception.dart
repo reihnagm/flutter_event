@@ -16,27 +16,29 @@ class ServerException implements Exception {
 Future<String> handleHttpException({
   required Map<String, dynamic> data,
   required int statusCode,
-})  async {
+}) async {
   String message = '';
-  
-  if(statusCode == 400) {
 
+  if (statusCode == 400) {
     final error = ErrorModel.fromJson(data);
     message = error.message;
-
   } else {
-    if(statusCode == 401) {
+    if (statusCode == 401) {
       return message = "Kamu tidak diizinkan mengakses halaman ini";
-    } else if(statusCode == 413) {
+    } else if (statusCode == 413) {
       return message = "Maksimal ukuran berkas 5 MB";
-    } else if(statusCode == 403) {
+    } else if (statusCode == 403) {
       return message = "Anda tidak diizinkan mengakses halaman ini";
-    } else if(statusCode == 500) {
+    } else if (statusCode == 500) {
       return message = "Sedang dalam gangguan";
-    } else if(statusCode == 502) {
-      return message= "Sedang dalam gangguan";
+    } else if (statusCode == 502) {
+      return message = "Sedang dalam gangguan";
+    } else if (statusCode == 404) {
+      final error = ErrorModel.fromJson(data);
+      message = error.message;
+      return message = message;
     } else {
-      return message = "Sedang dalam gangguan"; 
+      return message = "Sedang dalam gangguan";
     }
   }
 
@@ -46,24 +48,28 @@ Future<String> handleHttpException({
 String handleDioException(DioException e) {
   String message = '';
   if (e.type == DioExceptionType.badResponse) {
-    if(e.response?.statusCode == 400) {
+    if (e.response?.statusCode == 400) {
       Map<String, dynamic> data = e.response?.data;
       message = data["message"];
     } else {
-      if(e.response?.statusCode == 401) {
+      if (e.response?.statusCode == 401) {
         return message = "Maksimal ukuran berkas 5 MB";
-      } else if(e.response?.statusCode == 413) {
+      } else if (e.response?.statusCode == 413) {
         return message = "Maksimal ukuran berkas 5 MB";
-      } else if(e.response?.statusCode == 403) {
+      } else if (e.response?.statusCode == 403) {
         return message = "Anda tidak diizinkan akses halaman ini";
-      } else if(e.response?.statusCode == 405) {
+      } else if (e.response?.statusCode == 405) {
         return message = "Halaman tidak ditemukan";
-      } else if(e.response?.statusCode == 500) {
+      } else if (e.response?.statusCode == 500) {
         return message = "Sedang dalam gangguan";
-      } else if(e.response?.statusCode == 502) {
-        return message= "Sedang dalam gangguan";
+      } else if (e.response?.statusCode == 502) {
+        return message = "Sedang dalam gangguan";
+      } else if (e.response?.statusCode == 404) {
+        Map<String, dynamic> data = e.response?.data;
+        message = data["message"];
+        return message = message;
       } else {
-        return message = "Sedang dalam gangguan"; 
+        return message = "Sedang dalam gangguan";
       }
     }
     return message;

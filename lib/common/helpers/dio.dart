@@ -25,7 +25,7 @@ class DioHelper {
         receiveTimeout: const Duration(seconds: 20),
 
         // Optional: kalau mau tetap dapat response body pada 4xx/5xx tanpa throw otomatis
-        validateStatus: (status) => status != null && status >= 200 && status < 500,
+        // validateStatus: (status) => status != null && status >= 200 && status < 500, ini dianggap 400, 500 selalu makanya return try
       ),
     );
 

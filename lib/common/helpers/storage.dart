@@ -15,8 +15,8 @@ class StorageHelper {
     sharedPreferences.clear();
   }
 
-  static getAndroidOptions() => const AndroidOptions(encryptedSharedPreferences: true);
-  static getIOSOptions() => const IOSOptions();
+  static AndroidOptions getAndroidOptions() => const AndroidOptions(encryptedSharedPreferences: true);
+  static IOSOptions getIOSOptions() => const IOSOptions();
 
   static final FlutterSecureStorage storage = FlutterSecureStorage(
     aOptions: getAndroidOptions(),
