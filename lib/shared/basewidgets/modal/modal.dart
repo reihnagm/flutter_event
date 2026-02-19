@@ -12,10 +12,10 @@ import 'package:flutter_event/features/event/presentation/provider/event_list_no
 import 'package:flutter_event/global.dart';
 import 'package:flutter_event/shared/basewidgets/button/custom.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class GDialog {
-
   static Future<void> logout() {
     return showGeneralDialog(
       context: navigatorKey.currentState!.context,
@@ -32,61 +32,53 @@ class GDialog {
               height: 250.0,
               decoration: BoxDecoration(
                 color: ColorResources.white,
-                borderRadius: BorderRadius.circular(20.0)
+                borderRadius: BorderRadius.circular(20.0),
               ),
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                                                  
                   Align(
                     alignment: Alignment.center,
-                    child: Text("Are you sure want to Log out ?",
+                    child: Text(
+                      "Are you sure want to Log out ?",
                       style: montserratRegular.copyWith(
                         fontSize: 14.0,
                         fontWeight: FontWeight.w600,
-                        color: ColorResources.black
+                        color: ColorResources.black,
                       ),
-                    )
+                    ),
                   ),
-                                                  
+
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-
                         Container(
-                          margin: const EdgeInsets.only(
-                            top: 20.0,
-                            bottom: 20.0
-                          ),
+                          margin: const EdgeInsets.only(top: 20.0, bottom: 20.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             children: [
+                              const Expanded(child: SizedBox()),
 
-                              const Expanded(
-                                child: SizedBox()
-                              ),
-                              
                               Expanded(
                                 flex: 5,
                                 child: ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(context);
-                                  }, 
-                                  child: Text("No",
+                                  },
+                                  child: Text(
+                                    "No",
                                     style: montserratRegular.copyWith(
                                       fontSize: 12.0,
-                                      color: ColorResources.black
+                                      color: ColorResources.black,
                                     ),
-                                  )
-                                )
+                                  ),
+                                ),
                               ),
 
-                              const Expanded(
-                                child: SizedBox()
-                              ),
+                              const Expanded(child: SizedBox()),
 
                               Expanded(
                                 flex: 5,
@@ -94,54 +86,50 @@ class GDialog {
                                   onPressed: () {
                                     StorageHelper.removeToken();
                                     Navigator.pushReplacementNamed(context, LoginPage.route);
-                                  }, 
-                                  child: Text("Yes",
+                                  },
+                                  child: Text(
+                                    "Yes",
                                     style: montserratRegular.copyWith(
                                       fontSize: 12.0,
-                                      color: ColorResources.black
+                                      color: ColorResources.black,
                                     ),
-                                  )
-                                )
-                              ),
-                              
-                              const Expanded(
-                                child: SizedBox()
+                                  ),
+                                ),
                               ),
 
+                              const Expanded(child: SizedBox()),
                             ],
                           ),
-                        )
+                        ),
                       ],
-                    ) 
-                  )
+                    ),
+                  ),
                 ],
               ),
             ),
-          )
-        );
-      },
-      transitionBuilder: (BuildContext context, Animation<double> anim1, Animation<double> anim2, Widget? child) {
-        Tween<Offset> tween;
-        if (anim1.status == AnimationStatus.reverse) {
-          tween = Tween(begin: const Offset(-1, 0), end: Offset.zero);
-        } else {
-          tween = Tween(begin: const Offset(1, 0), end: Offset.zero);
-        }
-        return SlideTransition(
-          position: tween.animate(anim1),
-          child: FadeTransition(
-            opacity: anim1,
-            child: child,
           ),
         );
       },
+      transitionBuilder:
+          (BuildContext context, Animation<double> anim1, Animation<double> anim2, Widget? child) {
+            Tween<Offset> tween;
+            if (anim1.status == AnimationStatus.reverse) {
+              tween = Tween(begin: const Offset(-1, 0), end: Offset.zero);
+            } else {
+              tween = Tween(begin: const Offset(1, 0), end: Offset.zero);
+            }
+            return SlideTransition(
+              position: tween.animate(anim1),
+              child: FadeTransition(opacity: anim1, child: child),
+            );
+          },
     );
   }
 
   static Future<void> requestPermission({
     required String msg,
     required String type,
-    required String img
+    required String img,
   }) {
     return showDialog(
       context: navigatorKey.currentContext!,
@@ -155,14 +143,12 @@ class GDialog {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
                   SizedBox(
                     width: 290.0,
                     height: 280.0,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-          
                         Positioned(
                           left: 20.0,
                           right: 20.0,
@@ -172,36 +158,33 @@ class GDialog {
                             padding: const EdgeInsets.all(12.0),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(25.0),
-                              color: Colors.white
+                              color: Colors.white,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                            
-                                Text(msg, 
+                                Text(
+                                  msg,
                                   textAlign: TextAlign.center,
                                   style: montserratRegular.copyWith(
                                     fontSize: 12.0,
                                     fontWeight: FontWeight.w600,
-                                    color: ColorResources.black
+                                    color: ColorResources.black,
                                   ),
-                                )
-                            
+                                ),
                               ],
                             ),
-                          )
+                          ),
                         ),
 
                         Positioned(
                           top: 0.0,
                           left: 80.0,
                           right: 80.0,
-                          child: Image.asset("assets/images/icons/$img",
-                            height: 100.0,
-                          )
+                          child: Image.asset("assets/images/$img", height: 100.0),
                         ),
-          
+
                         Positioned(
                           bottom: 40.0,
                           left: 80.0,
@@ -215,25 +198,29 @@ class GDialog {
                             isBorderRadius: true,
                             height: 30.0,
                             onTap: () async {
-                              
-                              if(type == "notification") {
-                                await AppSettings.openAppSettings(type: AppSettingsType.notification);
-                              } 
-                              
+                              switch (type) {
+                                case "notification":
+                                  await AppSettings.openAppSettings(
+                                    type: AppSettingsType.notification,
+                                  );
+                                  break;
+                                case "photos":
+                                  openAppSettings();
+                                  break;
+                                default:
+                              }
+
                               Future.delayed(Duration.zero, () {
                                 Navigator.pop(context);
                               });
-
                             },
                             btnTxt: "Izinkan",
-                          )
+                          ),
                         ),
-                        
-                      ],  
-                    )
-                    
-                  ) 
-                ] 
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -242,10 +229,8 @@ class GDialog {
     );
   }
 
-  static Future<void> eventDelete({
-    required String id, 
-  }) {
-     return showDialog(
+  static Future<void> eventDelete({required String id}) {
+    return showDialog(
       context: navigatorKey.currentContext!,
       builder: (BuildContext context) {
         return PopScope(
@@ -257,14 +242,12 @@ class GDialog {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
                   SizedBox(
                     width: 290.0,
                     height: 280.0,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-          
                         Positioned(
                           left: 20.0,
                           right: 20.0,
@@ -274,25 +257,24 @@ class GDialog {
                             padding: const EdgeInsets.all(12.0),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(25.0),
-                              color: Colors.white
+                              color: Colors.white,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                            
-                                Text("Are you sure want to delete this event ?", 
+                                Text(
+                                  "Are you sure want to delete this event ?",
                                   textAlign: TextAlign.center,
                                   style: montserratRegular.copyWith(
                                     fontSize: 12.0,
                                     fontWeight: FontWeight.w600,
-                                    color: ColorResources.black
+                                    color: ColorResources.black,
                                   ),
-                                )
-                            
+                                ),
                               ],
                             ),
-                          )
+                          ),
                         ),
 
                         Positioned(
@@ -328,8 +310,10 @@ class GDialog {
                                   isBorderRadius: true,
                                   height: 30.0,
                                   onTap: () {
-                                    EventDeleteNotifier eventDeleteNotifier = context.read<EventDeleteNotifier>();
-                                    EventListNotifier eventListNotifier = context.read<EventListNotifier>();
+                                    EventDeleteNotifier eventDeleteNotifier = context
+                                        .read<EventDeleteNotifier>();
+                                    EventListNotifier eventListNotifier = context
+                                        .read<EventListNotifier>();
 
                                     Future.delayed(Duration.zero, () async {
                                       await eventDeleteNotifier.eventDelete(id: id);
@@ -338,24 +322,24 @@ class GDialog {
                                     Future.delayed(const Duration(seconds: 1), () async {
                                       await eventListNotifier.eventList();
                                     });
-                                    
+
                                     Navigator.pop(context, "refetch");
                                   },
-                                  isLoading: context.watch<EventDeleteNotifier>().state == ProviderState.loading 
-                                  ? true 
-                                  : false,
+                                  isLoading:
+                                      context.watch<EventDeleteNotifier>().state ==
+                                          ProviderState.loading
+                                      ? true
+                                      : false,
                                   btnTxt: "Delete",
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        
-                      ],  
-                    )
-                    
-                  ) 
-                ] 
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -372,14 +356,13 @@ class GDialog {
           controller: controller,
           config: const QuillSimpleToolbarConfig(
             showSuperscript: false,
-            showSubscript: false, 
+            showSubscript: false,
             showCodeBlock: false,
             showAlignmentButtons: true,
-            toolbarIconAlignment: WrapAlignment.spaceAround
+            toolbarIconAlignment: WrapAlignment.spaceAround,
           ),
         );
       },
     );
   }
-
 }

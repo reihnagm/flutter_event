@@ -1,32 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event/common/utils/custom_themes.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'package:flutter_event/common/utils/custom_themes.dart';
 import 'package:flutter_event/common/helpers/storage.dart';
-import 'package:flutter_event/injection.dart';
 
+import 'package:flutter_event/injection.dart';
 import 'package:flutter_event/features/splash/presentation/pages/splash.dart';
 
 import 'package:flutter_event/global.dart';
 import 'package:flutter_event/providers.dart';
 import 'package:flutter_event/route.dart';
 
-import 'package:intl/date_symbol_data_local.dart';
+// ✅ import gate
+import 'package:flutter_event/common/permissions/permission_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-  await initializeDateFormatting("id", null);
+
+  await initializeDateFormatting("id_ID", null);
+  Intl.defaultLocale = "id_ID";
+
   await StorageHelper.init();
 
   init();
 
-  runApp(MultiProvider(providers: providers, child: const MyApp()));
+  runApp(
+    MultiProvider(
+      providers: providers,
+      child: const PermissionGate(child: MyApp()),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -41,6 +52,8 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'My Event',
+      supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
+      locale: const Locale('id', 'ID'),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
