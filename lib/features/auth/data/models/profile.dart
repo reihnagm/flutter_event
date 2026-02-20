@@ -1,4 +1,3 @@
-
 class ProfileModel {
   int status;
   bool error;
@@ -21,22 +20,18 @@ class ProfileModel {
 }
 
 class ProfileData {
-  String? id;
+  int? id;
+  String? userId;
   String? avatar;
   String? phone;
   String? fullname;
   String? email;
 
-  ProfileData({
-    this.id,
-    this.avatar,
-    this.phone,
-    this.fullname,
-    this.email,
-  });
+  ProfileData({this.id, this.userId, this.avatar, this.phone, this.fullname, this.email});
 
   factory ProfileData.fromJson(Map<String, dynamic> json) => ProfileData(
     id: json["id"],
+    userId: json["user_id"],
     avatar: json["avatar"],
     phone: json["phone"],
     fullname: json["fullname"],

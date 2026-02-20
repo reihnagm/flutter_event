@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'dart:developer';
 
 import 'package:flutter_event/common/constants/remote_data_source_consts.dart';
 import 'package:flutter_event/common/errors/exception.dart';
+import 'package:flutter_event/common/helpers/dio.dart';
 
 import 'package:flutter_event/features/auth/data/models/profile.dart';
 import 'package:flutter_event/features/event/data/models/event_detail.dart';
@@ -14,16 +16,16 @@ abstract class ProfileRemoteDataSource {
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
-  Dio client;
-
-  ProfileRemoteDataSourceImpl({required this.client});
+  ProfileRemoteDataSourceImpl();
 
   @override
   Future<ProfileModel> getProfile() async {
     try {
-      final response = await client.get("${RemoteDataSourceConsts.baseUrl}/api/v1/profile/me");
+      final dio = DioHelper.shared.getClient();
+      final response = await dio.get("${RemoteDataSourceConsts.baseUrl}/api/v1/profile/me");
       Map<String, dynamic> data = response.data;
       ProfileModel profileModel = ProfileModel.fromJson(data);
+      debugPrint(profileModel.data.fullname);
       return profileModel;
     } on DioException catch (e) {
       String message = handleDioException(e);
@@ -38,7 +40,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<EventDetailModel> updateProfile({required String fullname}) async {
     try {
-      Response response = await client.put(
+      final dio = DioHelper.shared.getClient();
+      Response response = await dio.put(
         "${RemoteDataSourceConsts.baseUrl}/api/v1/profile/me",
         data: {"fullname": fullname},
       );

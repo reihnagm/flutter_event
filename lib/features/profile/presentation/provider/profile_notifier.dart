@@ -4,17 +4,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_event/common/helpers/enum.dart';
 
 import 'package:flutter_event/features/auth/data/models/profile.dart';
-import 'package:flutter_event/features/auth/domain/usecases/profile.dart';
+import 'package:flutter_event/features/profile/domain/usecases/get_profile.dart';
 
 class ProfileNotifier with ChangeNotifier {
-  final ProfileUseCase profileUseCase;
+  final GetProfileUseCase profileUseCase;
 
-  ProfileNotifier({
-    required this.profileUseCase
-  });
+  ProfileNotifier({required this.profileUseCase});
 
   late TextEditingController emailC;
-  late TextEditingController passC; 
+  late TextEditingController passC;
 
   ProviderState _state = ProviderState.idle;
   ProviderState get state => _state;
@@ -36,13 +34,15 @@ class ProfileNotifier with ChangeNotifier {
 
     final result = await profileUseCase.execute();
 
-    result.fold((l) {
-      _message = l.message;
-      setStateProvider(ProviderState.error);
-    }, (r) {
-      _entity = r.data;
-      setStateProvider(ProviderState.loaded);
-    });
+    result.fold(
+      (l) {
+        _message = l.message;
+        setStateProvider(ProviderState.error);
+      },
+      (r) {
+        _entity = r.data;
+        setStateProvider(ProviderState.loaded);
+      },
+    );
   }
-
 }

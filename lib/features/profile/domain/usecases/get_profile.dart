@@ -10,7 +10,7 @@ class GetProfileUseCase {
 
   GetProfileUseCase(this.repository);
 
-  Future<Either<Failure, ProfileModel>> execute({required String fullname}) {
+  Future<Either<Failure, ProfileModel>> execute() {
     return repository.getProfile();
   }
 }

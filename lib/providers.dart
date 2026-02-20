@@ -3,7 +3,7 @@ import 'package:provider/single_child_widget.dart';
 
 import 'package:flutter_event/injection.dart';
 
-import 'package:flutter_event/features/auth/presentation/provider/profile_notifier.dart';
+import 'package:flutter_event/features/profile/presentation/provider/profile_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_delete_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_delete_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_detail_notifier.dart';
