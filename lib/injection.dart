@@ -1,21 +1,19 @@
 import 'package:dio/dio.dart';
+
 import 'package:get_it/get_it.dart';
+
+import 'package:flutter_event/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:flutter_event/features/event/data/datasources/event_remote_data_source.dart';
+import 'package:flutter_event/features/auth/data/datasources/auth_remote_data_source.dart';
+
+import 'package:flutter_event/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_event/features/profile/domain/repositories/profile_repository.dart';
+import 'package:flutter_event/features/event/domain/repositories/event_repository.dart';
 
 import 'package:flutter_event/common/helpers/dio.dart';
 
-import 'package:flutter_event/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:flutter_event/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:flutter_event/features/auth/domain/repositories/auth_repository.dart';
-import 'package:flutter_event/features/auth/domain/usecases/login.dart';
-import 'package:flutter_event/features/auth/domain/usecases/profile.dart';
-import 'package:flutter_event/features/auth/domain/usecases/register.dart';
-import 'package:flutter_event/features/auth/presentation/provider/login_notifier.dart';
-import 'package:flutter_event/features/auth/presentation/provider/profile_notifier.dart';
-import 'package:flutter_event/features/auth/presentation/provider/register_notifier.dart';
-
-import 'package:flutter_event/features/event/data/datasources/event_remote_data_source.dart';
-import 'package:flutter_event/features/event/data/repositories/event_repository_impl.dart';
-import 'package:flutter_event/features/event/domain/repositories/event_repository.dart';
+import 'package:flutter_event/features/profile/domain/usecases/get_profile.dart';
+import 'package:flutter_event/features/profile/domain/usecases/update_profile.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_delete.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_delete_image.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_detail.dart';
@@ -23,6 +21,18 @@ import 'package:flutter_event/features/event/domain/usecases/event_list.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_store.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_store_image.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_update.dart';
+import 'package:flutter_event/features/auth/domain/usecases/login.dart';
+import 'package:flutter_event/features/auth/domain/usecases/profile.dart';
+import 'package:flutter_event/features/auth/domain/usecases/register.dart';
+
+import 'package:flutter_event/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:flutter_event/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:flutter_event/features/event/data/repositories/event_repository_impl.dart';
+
+import 'package:flutter_event/features/auth/presentation/provider/login_notifier.dart';
+import 'package:flutter_event/features/auth/presentation/provider/profile_notifier.dart';
+import 'package:flutter_event/features/auth/presentation/provider/register_notifier.dart';
+
 import 'package:flutter_event/features/event/presentation/provider/event_delete_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_delete_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_detail_notifier.dart';
@@ -55,6 +65,9 @@ void _registerDataSources() {
   locator.registerLazySingleton<EventRemoteDataSource>(
     () => EventRemoteDataSourceImpl(client: locator<Dio>()),
   );
+  locator.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSourceImpl(client: locator<Dio>()),
+  );
 }
 
 /// Repository
@@ -65,6 +78,9 @@ void _registerRepositories() {
   locator.registerLazySingleton<EventRepository>(
     () => EventRepositoryImpl(remoteDataSource: locator<EventRemoteDataSource>()),
   );
+  locator.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remoteDataSource: locator<ProfileRemoteDataSource>()),
+  );
 }
 
 /// Use Case
@@ -72,6 +88,8 @@ void _registerUseCases() {
   locator.registerLazySingleton(() => RegisterUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton(() => LoginUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton(() => ProfileUseCase(locator<AuthRepository>()));
+  locator.registerLazySingleton(() => GetProfileUseCase(locator<ProfileRepository>()));
+  locator.registerLazySingleton(() => UpdateProfileUseCase(locator<ProfileRepository>()));
 
   locator.registerLazySingleton(() => EventListUseCase(locator<EventRepository>()));
   locator.registerLazySingleton(() => EventDetailUseCase(locator<EventRepository>()));

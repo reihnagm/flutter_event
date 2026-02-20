@@ -179,10 +179,18 @@ class GDialog {
                         ),
 
                         Positioned(
-                          top: 0.0,
-                          left: 80.0,
-                          right: 80.0,
-                          child: Image.asset("assets/images/$img", height: 100.0),
+                          top: 15.0,
+                          left: 50.0,
+                          right: 50.0,
+                          child: Container(
+                            padding: EdgeInsets.all(15.0),
+                            decoration: BoxDecoration(
+                              boxShadow: kElevationToShadow[4],
+                              color: ColorResources.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.asset("assets/images/$img", height: 50.0),
+                          ),
                         ),
 
                         Positioned(
