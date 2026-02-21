@@ -114,7 +114,7 @@ class EventRepositoryImpl implements EventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDetailModel>> eventDetail({required String id}) async {
+  Future<Either<Failure, EventDetailResponse>> eventDetail({required String id}) async {
     try {
       var result = await remoteDataSource.eventDetail(id: id);
       return Right(result);

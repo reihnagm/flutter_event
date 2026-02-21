@@ -199,14 +199,14 @@ class EventListPageState extends State<EventListPage> {
                               Navigator.pushNamed(
                                 context,
                                 FormEventEditPage.route,
-                                arguments: {"id": event.id},
+                                arguments: {"id": event.uid},
                               ).then((val) {
                                 if (val != null) _getData();
                               });
                             },
                             onDelete: () async {
-                              // await GDialog.eventDelete(id: event.id);
-                              // await _getData();
+                              await GDialog.eventDelete(id: event.uid);
+                              await _getData();
                             },
                           ),
                         );

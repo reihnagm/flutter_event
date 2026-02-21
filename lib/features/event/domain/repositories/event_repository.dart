@@ -7,7 +7,7 @@ import 'package:flutter_event/features/event/data/models/event_detail.dart';
 
 abstract class EventRepository {
   Future<Either<Failure, EventResponse>> eventList();
-  Future<Either<Failure, EventDetailModel>> eventDetail({required String id});
+  Future<Either<Failure, EventDetailResponse>> eventDetail({required String id});
   Future<Either<Failure, void>> eventStore({
     required String id,
     required String title,

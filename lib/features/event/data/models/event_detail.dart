@@ -1,99 +1,99 @@
+class EventDetailResponse {
+  final int status;
+  final bool error;
+  final String message;
+  final EventDetail data;
 
-import 'dart:io';
-
-class EventDetailModel {
-  int status;
-  bool error;
-  String message;
-  EventDetailData data;
-
-  EventDetailModel({
+  EventDetailResponse({
     required this.status,
     required this.error,
     required this.message,
     required this.data,
   });
 
-  factory EventDetailModel.fromJson(Map<String, dynamic> json) => EventDetailModel(
-    status: json["status"],
-    error: json["error"],
-    message: json["message"],
-    data: EventDetailData.fromJson(json["data"]),
-  );
+  factory EventDetailResponse.fromJson(Map<String, dynamic> json) {
+    return EventDetailResponse(
+      status: json['status'] ?? 0,
+      error: json['error'] ?? false,
+      message: json['message'] ?? '',
+      data: EventDetail.fromJson(json['data'] ?? const {}),
+    );
+  }
 }
 
-class EventDetailData {
-  String? id;
-  String? title;
-  String? caption;
-  List<Media>? media;
-  String? startDate;
-  String? endDate;
-  String? startTime;
-  String? endTime;
-  User? user;
-  DateTime? createdAt;
+class EventDetail {
+  final int id;
+  final String uid;
+  final String title;
+  final String content;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final EventAuthor author;
+  final List<EventImage> images;
 
-  EventDetailData({
-    this.id,
-    this.title,
-    this.caption,
-    this.media,
-    this.startDate,
-    this.endDate,
-    this.startTime,
-    this.endTime,
-    this.user,
-    this.createdAt,
+  EventDetail({
+    required this.id,
+    required this.uid,
+    required this.title,
+    required this.content,
+    required this.startDate,
+    required this.endDate,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.author,
+    required this.images,
   });
 
-  factory EventDetailData.fromJson(Map<String, dynamic> json) => EventDetailData(
-    id: json["id"],
-    title: json["title"],
-    caption: json["caption"],
-    media: List<Media>.from(json["media"].map((x) => Media.fromJson(x))),
-    startDate: json["start_date"],
-    endDate: json["end_date"],
-    startTime: json["start_time"],
-    endTime: json["end_time"],
-    user: User.fromJson(json["user"]),
-    createdAt: DateTime.parse(json["created_at"]),
-  );
-
+  factory EventDetail.fromJson(Map<String, dynamic> json) {
+    return EventDetail(
+      id: json['id'] ?? 0,
+      uid: json['uid'] ?? '',
+      title: json['title'] ?? '',
+      content: json['content'] ?? '',
+      startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
+      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+      author: EventAuthor.fromJson(json['author'] ?? const {}),
+      images: (json['images'] as List? ?? const [])
+          .map((x) => EventImage.fromJson(x as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
 
-class Media {
-  int id;
-  String path;
-  String type;
-  File? file;
+class EventAuthor {
+  final String uid;
+  final String email;
+  final String phone;
+  final String fullname;
 
-  Media({
-    required this.id,
-    required this.path,
-    required this.type,
-    required this.file
-  });
-
-  factory Media.fromJson(Map<String, dynamic> json) => Media(
-    id: json["id"],
-    path: json["path"],
-    type: "network",
-    file: null
-  );
-}
-
-class User {
-  String id;
-  String fullname;
-
-  User({
-    required this.id,
+  EventAuthor({
+    required this.uid,
+    required this.email,
+    required this.phone,
     required this.fullname,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json["id"],
-    fullname: json["fullname"],
-  );
+  factory EventAuthor.fromJson(Map<String, dynamic> json) {
+    return EventAuthor(
+      uid: json['uid'] ?? '',
+      email: json['email'] ?? '',
+      phone: json['phone'] ?? '',
+      fullname: json['fullname'] ?? '',
+    );
+  }
+}
+
+class EventImage {
+  final int id;
+  final String path;
+
+  EventImage({required this.id, required this.path});
+
+  factory EventImage.fromJson(Map<String, dynamic> json) {
+    return EventImage(id: json['id'] ?? 0, path: json['path'] ?? '');
+  }
 }

@@ -33,7 +33,7 @@ abstract class EventRemoteDataSource {
     required String endTime,
   });
   Future<void> eventDelete({required String id});
-  Future<EventDetailModel> eventDetail({required String id});
+  Future<EventDetailResponse> eventDetail({required String id});
   Future<void> eventStoreImage({required String eventId, required String path});
   Future<void> eventDeleteImage({required String eventId});
 }
@@ -60,14 +60,14 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   }
 
   @override
-  Future<EventDetailModel> eventDetail({required String id}) async {
+  Future<EventDetailResponse> eventDetail({required String id}) async {
     try {
       final dio = DioHelper.shared.getClient();
       Response response = await dio.get(
         "${RemoteDataSourceConsts.baseUrl}/api/v1/event/detail/$id",
       );
       Map<String, dynamic> data = response.data;
-      EventDetailModel eventDetailModel = EventDetailModel.fromJson(data);
+      EventDetailResponse eventDetailModel = EventDetailResponse.fromJson(data);
       return eventDetailModel;
     } on DioException catch (e) {
       String message = handleDioException(e);

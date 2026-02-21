@@ -1,4 +1,3 @@
-
 import 'package:dartz/dartz.dart';
 
 import 'package:flutter_event/common/errors/failure.dart';
@@ -11,7 +10,7 @@ class EventDetailUseCase {
 
   EventDetailUseCase(this.repository);
 
-  Future<Either<Failure, EventDetailModel>> execute({required String id}) {
+  Future<Either<Failure, EventDetailResponse>> execute({required String id}) {
     return repository.eventDetail(id: id);
   }
 }

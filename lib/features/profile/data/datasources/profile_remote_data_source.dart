@@ -36,16 +36,13 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<EventDetailModel> updateProfile({required String fullname}) async {
+  Future<void> updateProfile({required String fullname}) async {
     try {
       final dio = DioHelper.shared.getClient();
-      Response response = await dio.put(
+      await dio.put(
         "${RemoteDataSourceConsts.baseUrl}/api/v1/profile/me",
         data: {"fullname": fullname},
       );
-      Map<String, dynamic> data = response.data;
-      EventDetailModel eventDetailModel = EventDetailModel.fromJson(data);
-      return eventDetailModel;
     } on DioException catch (e) {
       String message = handleDioException(e);
       log(message);
