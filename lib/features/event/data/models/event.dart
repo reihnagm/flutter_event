@@ -1,119 +1,120 @@
-class DateRangeModel {
-  DateTime startDate;
-  DateTime endDate;
-  List<Map<String, dynamic>> dataArray;
+class EventResponse {
+  final int status;
+  final bool error;
+  final String message;
+  final EventPagination data;
 
-  DateRangeModel({required this.startDate, required this.endDate, required this.dataArray});
-}
-
-Map<DateTime, List<Map<String, dynamic>>> groupDataByDate(List<DateRangeModel> data) {
-  Map<DateTime, List<Map<String, dynamic>>> groupedData = {};
-
-  for (var dateModel in data) {
-    DateTime currentDate = dateModel.startDate;
-
-    while (currentDate.isBefore(dateModel.endDate) || currentDate.isAtSameMomentAs(dateModel.endDate)) {
-      groupedData.putIfAbsent(currentDate, () => []);
-      groupedData[currentDate]!.addAll(dateModel.dataArray);
-      currentDate = currentDate.add(const Duration(days: 1));
-    }
-  }
-
-  return groupedData;
-}
-
-class EventModel {
-  int status;
-  bool error;
-  String message;
-  int total;
-  int perPage;
-  int prevPage;
-  int nextPage;
-  int currentPage;
-  String nextUrl;
-  String prevUrl;
-  List<EventData> data;
-
-  EventModel({
+  EventResponse({
     required this.status,
     required this.error,
     required this.message,
-    required this.total,
-    required this.perPage,
-    required this.prevPage,
-    required this.nextPage,
-    required this.currentPage,
-    required this.nextUrl,
-    required this.prevUrl,
     required this.data,
   });
 
-  factory EventModel.fromJson(Map<String, dynamic> json) => EventModel(
-    status: json["status"],
-    error: json["error"],
-    message: json["message"],
-    total: json["total"],
-    perPage: json["per_page"],
-    prevPage: json["prev_page"],
-    nextPage: json["next_page"],
-    currentPage: json["current_page"],
-    nextUrl: json["next_url"],
-    prevUrl: json["prev_url"],
-    data: List<EventData>.from(json["data"].map((x) => EventData.fromJson(x))),
-  );
+  factory EventResponse.fromJson(Map<String, dynamic> json) {
+    return EventResponse(
+      status: json["status"],
+      error: json["error"],
+      message: json["message"],
+      data: EventPagination.fromJson(json["data"]),
+    );
+  }
 }
 
-class EventData {
-  String id;
-  String title;
-  String caption;
-  List<dynamic> media;
-  DateTime startDate;
-  DateTime endDate;
-  String startTime;
-  String endTime;
-  User user;
-  DateTime createdAt;
+class EventPagination {
+  final int page;
+  final int limit;
+  final int total;
+  final List<EventItem> events;
 
-  EventData({
-    required this.id,
-    required this.title,
-    required this.caption,
-    required this.media,
-    required this.startDate,
-    required this.endDate,
-    required this.startTime,
-    required this.endTime,
-    required this.user,
-    required this.createdAt,
+  EventPagination({
+    required this.page,
+    required this.limit,
+    required this.total,
+    required this.events,
   });
 
-  factory EventData.fromJson(Map<String, dynamic> json) => EventData(
-    id: json["id"],
-    title: json["title"],
-    caption: json["caption"],
-    media: List<dynamic>.from(json["media"].map((x) => x)),
-    startDate: DateTime.parse(json["start_date"]),
-    endDate: DateTime.parse(json["end_date"]),
-    startTime: json["start_time"],
-    endTime: json["end_time"],
-    user: User.fromJson(json["user"]),
-    createdAt: DateTime.parse(json["created_at"]),
-  );
+  factory EventPagination.fromJson(Map<String, dynamic> json) {
+    return EventPagination(
+      page: json["page"],
+      limit: json["limit"],
+      total: json["total"],
+      events: List<EventItem>.from(json["data"].map((x) => EventItem.fromJson(x))),
+    );
+  }
 }
 
-class User {
-  String id;
-  String fullname;
+class EventItem {
+  final int id;
+  final String uid;
+  final String title;
+  final String content;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final EventAuthor author;
+  final List<EventImage> images;
 
-  User({
+  EventItem({
     required this.id,
+    required this.uid,
+    required this.title,
+    required this.content,
+    required this.startDate,
+    required this.endDate,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.author,
+    required this.images,
+  });
+
+  factory EventItem.fromJson(Map<String, dynamic> json) {
+    return EventItem(
+      id: json["id"],
+      uid: json["uid"],
+      title: json["title"] ?? "",
+      content: json["content"] ?? "",
+      startDate: json["start_date"] != null ? DateTime.parse(json["start_date"]) : null,
+      endDate: json["end_date"] != null ? DateTime.parse(json["end_date"]) : null,
+      createdAt: json["created_at"] != null ? DateTime.parse(json["created_at"]) : null,
+      updatedAt: json["updated_at"] != null ? DateTime.parse(json["updated_at"]) : null,
+      author: EventAuthor.fromJson(json["author"]),
+      images: List<EventImage>.from((json["images"] ?? []).map((x) => EventImage.fromJson(x))),
+    );
+  }
+}
+
+class EventAuthor {
+  final String uid;
+  final String email;
+  final String phone;
+  final String fullname;
+
+  EventAuthor({
+    required this.uid,
+    required this.email,
+    required this.phone,
     required this.fullname,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json["id"],
-    fullname: json["fullname"],
-  );
+  factory EventAuthor.fromJson(Map<String, dynamic> json) {
+    return EventAuthor(
+      uid: json["uid"] ?? "",
+      email: json["email"] ?? "",
+      phone: json["phone"] ?? "",
+      fullname: json["fullname"] ?? "",
+    );
+  }
+}
+
+class EventImage {
+  final int id;
+  final String path;
+
+  EventImage({required this.id, required this.path});
+
+  factory EventImage.fromJson(Map<String, dynamic> json) {
+    return EventImage(id: json["id"], path: json["path"] ?? "");
+  }
 }

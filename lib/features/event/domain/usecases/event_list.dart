@@ -11,7 +11,7 @@ class EventListUseCase {
 
   EventListUseCase(this.repository);
 
-  Future<Either<Failure, EventModel>> execute() {
+  Future<Either<Failure, EventResponse>> execute() {
     return repository.eventList();
   }
 }

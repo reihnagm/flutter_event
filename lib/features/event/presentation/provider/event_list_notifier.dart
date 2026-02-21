@@ -12,17 +12,14 @@ class EventListNotifier with ChangeNotifier {
 
   DateTime selectedDate = DateTime.now();
 
-  final List<EventData> _entity = [];
-  List<EventData> get entity => [..._entity];
+  final List<EventItem> _entity = [];
+  List<EventItem> get entity => [..._entity];
 
-  final List<DateRangeModel> _data = [];
-  List<DateRangeModel> get data => [..._data];
+  final Map<DateTime, List<EventItem>> _events = {};
+  Map<DateTime, List<EventItem>> get events => {..._events};
 
-  final Map<DateTime, List<Map<String, dynamic>>> _events = {};
-  Map<DateTime, List<Map<String, dynamic>>> get events => {..._events};
-
-  List<Map<String, dynamic>> _selectedEvents = [];
-  List<Map<String, dynamic>> get selectedEvents => [..._selectedEvents];
+  List<EventItem> _selectedEvents = [];
+  List<EventItem> get selectedEvents => [..._selectedEvents];
 
   ProviderState _state = ProviderState.idle;
   ProviderState get state => _state;
@@ -35,7 +32,7 @@ class EventListNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void addSelectedEvents(List<Map<String, dynamic>> events) {
+  void addSelectedEvents(List<EventItem> events) {
     _selectedEvents = events;
     notifyListeners();
   }
@@ -45,53 +42,90 @@ class EventListNotifier with ChangeNotifier {
     notifyListeners();
   }
 
+  DateTime _normalizeDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+
+  /// start fallback:
+  /// - startDate
+  /// - createdAt
+  /// - today
+  DateTime _startFallback(EventItem e) {
+    return _normalizeDay(e.startDate ?? e.createdAt ?? DateTime.now());
+  }
+
+  /// end fallback:
+  /// - endDate (kalau ada)
+  /// - start (biar 1 hari)
+  DateTime _endFallback(EventItem e, DateTime normalizedStart) {
+    final rawEnd = e.endDate;
+    if (rawEnd == null) return normalizedStart;
+    return _normalizeDay(rawEnd);
+  }
+
+  /// Expand event ke semua hari dalam range (inclusive)
+  Iterable<DateTime> _daysInRange(DateTime start, DateTime end) sync* {
+    // safety kalau data kotor (end < start)
+    if (end.isBefore(start)) {
+      final tmp = start;
+      start = end;
+      end = tmp;
+    }
+
+    var cur = start;
+    while (!cur.isAfter(end)) {
+      yield cur;
+      cur = cur.add(const Duration(days: 1));
+    }
+  }
+
+  Map<DateTime, List<EventItem>> _groupByDateRange(List<EventItem> items) {
+    final Map<DateTime, List<EventItem>> out = {};
+
+    for (final e in items) {
+      final start = _startFallback(e);
+      final end = _endFallback(e, start);
+
+      for (final day in _daysInRange(start, end)) {
+        (out[day] ??= <EventItem>[]).add(e);
+      }
+    }
+
+    return out;
+  }
+
   Future<void> eventList() async {
     setStateProvider(ProviderState.loading);
 
     final result = await eventListUseCase.execute();
 
-    result.fold((failure) {
-      _message = failure.message;
-      setStateProvider(ProviderState.error);
-    }, (success) {
-      // Clear previous data
-      _entity.clear();
-      _selectedEvents.clear();
-      _data.clear();
-      _events.clear();
+    result.fold(
+      (failure) {
+        _message = failure.message;
+        setStateProvider(ProviderState.error);
+      },
+      (success) {
+        final List<EventItem> items = success.data.events;
 
-      // Populate new data
-      _entity.addAll(success.data);
+        _entity
+          ..clear()
+          ..addAll(items);
 
-      for (EventData el in _entity) {
-        _data.add(DateRangeModel(
-          startDate: DateTime(el.startDate.year, el.startDate.month, el.startDate.day),
-          endDate: DateTime(el.endDate.year, el.endDate.month, el.endDate.day),
-          dataArray: [
-            {
-              "id": el.id,
-              "name": el.title,
-              "caption": el.caption,
-              "medias": el.media,
-              "createdAt": el.createdAt,
-            }
-          ],
-        ));
-      }
+        _events
+          ..clear()
+          ..addAll(_groupByDateRange(items));
 
-      final Map<DateTime, List<Map<String, dynamic>>> groupedData = groupDataByDate(_data);
-      _events.addAll(groupedData);
+        // set selected events = hari ini (kalau ada)
+        _selectedEvents = [];
+        final todayStr = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
-      // Set selected events to today if available
-      final todayStr = DateFormat('dd/MM/yyyy').format(DateTime.now());
-      for (var entry in groupedData.entries) {
-        if (DateFormat('dd/MM/yyyy').format(entry.key) == todayStr) {
-          _selectedEvents = entry.value;
-          break;
+        for (final entry in _events.entries) {
+          if (DateFormat('dd/MM/yyyy').format(entry.key) == todayStr) {
+            _selectedEvents = entry.value;
+            break;
+          }
         }
-      }
 
-      setStateProvider(ProviderState.loaded);
-    });
+        setStateProvider(ProviderState.loaded);
+      },
+    );
   }
 }

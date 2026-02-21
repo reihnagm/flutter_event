@@ -61,12 +61,8 @@ void _registerDataSources() {
   locator.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(client: locator<Dio>()),
   );
-  locator.registerLazySingleton<EventRemoteDataSource>(
-    () => EventRemoteDataSourceImpl(client: locator<Dio>()),
-  );
-  locator.registerLazySingleton<ProfileRemoteDataSource>(
-    () => ProfileRemoteDataSourceImpl(),
-  );
+  locator.registerLazySingleton<EventRemoteDataSource>(() => EventRemoteDataSourceImpl());
+  locator.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl());
 }
 
 /// Repository

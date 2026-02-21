@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_event/common/helpers/enum.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 import 'package:flutter_event/features/profile/presentation/provider/profile_notifier.dart';
+import 'package:flutter_event/features/event/data/models/event.dart';
 import 'package:flutter_event/features/event/presentation/pages/event_detail.dart';
 import 'package:flutter_event/features/event/presentation/pages/form_create.dart';
 import 'package:flutter_event/features/event/presentation/pages/form_edit.dart';
@@ -48,27 +50,22 @@ class EventListPageState extends State<EventListPage> {
   }
 
   Future<void> _getData() async {
-    // Ambil data
     await Future.wait([_eventListNotifier.eventList(), _profileNotifier.getProfile()]);
-
     if (!mounted) return;
 
-    // Sync selected date & events
     _eventListNotifier.updateSelectedDate(_selectedDay);
     _eventListNotifier.addSelectedEvents(_getEventsForDay(_selectedDay));
   }
 
-  List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
-    // Buat map view (equals+hash) tapi tanpa addAll berulang.
-    // Kita baca dari notifier.events (diasumsikan Map<DateTime, List<Map<String, dynamic>>>)
+  List<EventItem> _getEventsForDay(DateTime day) {
     final source = _eventListNotifier.events;
 
-    final kEvents = LinkedHashMap<DateTime, List<Map<String, dynamic>>>(
+    final kEvents = LinkedHashMap<DateTime, List<EventItem>>(
       equals: isSameDay,
       hashCode: _getHashCode,
     )..addAll(source);
 
-    return kEvents[day] ?? <Map<String, dynamic>>[];
+    return kEvents[day] ?? <EventItem>[];
   }
 
   void _onDaySelected(DateTime selectedDayParam, DateTime focusedDayParam) {
@@ -134,7 +131,7 @@ class EventListPageState extends State<EventListPage> {
               slivers: [
                 SliverList(
                   delegate: SliverChildListDelegate([
-                    TableCalendar(
+                    TableCalendar<EventItem>(
                       locale: 'id_ID',
                       weekNumbersVisible: false,
                       daysOfWeekVisible: false,
@@ -175,10 +172,7 @@ class EventListPageState extends State<EventListPage> {
                       eventLoader: _getEventsForDay,
                       calendarStyle: const CalendarStyle(outsideDaysVisible: true),
                       onDaySelected: _onDaySelected,
-                      onPageChanged: (val) {
-                        // important: kalau mau UI ikut update konsisten
-                        setState(() => _focusedDay = val);
-                      },
+                      onPageChanged: (val) => setState(() => _focusedDay = val),
                     ),
 
                     // List event untuk tanggal terpilih
@@ -190,14 +184,6 @@ class EventListPageState extends State<EventListPage> {
                       itemBuilder: (context, i) {
                         final event = notifier.selectedEvents[i];
 
-                        final medias = (event["medias"] as List?) ?? const [];
-                        final imageUrl = medias.isNotEmpty
-                            ? (medias.first["path"]?.toString())
-                            : null;
-
-                        final name = event["name"]?.toString() ?? "-";
-                        final id = event["id"];
-
                         return Bouncing(
                           onPress: () {
                             Navigator.pushNamed(
@@ -207,20 +193,19 @@ class EventListPageState extends State<EventListPage> {
                             );
                           },
                           child: _EventCard(
-                            name: name,
-                            imageUrl: imageUrl,
+                            name: event.title.isNotEmpty ? event.title : "-",
+                            images: event.images,
                             onEdit: () {
                               Navigator.pushNamed(
                                 context,
                                 FormEventEditPage.route,
-                                arguments: {"id": id},
+                                arguments: {"id": event.id},
                               ).then((val) {
                                 if (val != null) _getData();
                               });
                             },
                             onDelete: () async {
-                              await GDialog.eventDelete(id: id);
-                              // optional: refresh setelah delete sukses
+                              // await GDialog.eventDelete(id: event.id);
                               // await _getData();
                             },
                           ),
@@ -252,7 +237,6 @@ class _EndDrawer extends StatelessWidget {
         children: [
           const SizedBox(height: 40.0),
 
-          // Profile section (lebih hemat rebuild)
           Consumer<ProfileNotifier>(
             builder: (context, notifier, _) {
               final isLoading = notifier.state == ProviderState.loading;
@@ -376,13 +360,13 @@ class _DayCell extends StatelessWidget {
 
 class _EventCard extends StatelessWidget {
   final String name;
-  final String? imageUrl;
+  final List<EventImage> images;
   final VoidCallback onEdit;
   final Future<void> Function() onDelete;
 
   const _EventCard({
     required this.name,
-    required this.imageUrl,
+    required this.images,
     required this.onEdit,
     required this.onDelete,
   });
@@ -407,8 +391,7 @@ class _EventCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _EventCoverImage(imageUrl: imageUrl),
-
+          _EventCoverCarousel(images: images),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(10.0),
@@ -443,39 +426,121 @@ class _EventCard extends StatelessWidget {
   }
 }
 
-class _EventCoverImage extends StatelessWidget {
-  final String? imageUrl;
-  const _EventCoverImage({required this.imageUrl});
+class _EventCoverCarousel extends StatefulWidget {
+  final List<EventImage> images;
+  const _EventCoverCarousel({required this.images});
+
+  @override
+  State<_EventCoverCarousel> createState() => _EventCoverCarouselState();
+}
+
+class _EventCoverCarouselState extends State<_EventCoverCarousel> {
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
     const fallback = AssetImage('assets/images/default_image.png');
 
-    BoxDecoration baseDecoration(ImageProvider provider) {
-      return BoxDecoration(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12.0),
-          topRight: Radius.circular(12.0),
+    // 0 images => fallback
+    if (widget.images.isEmpty) {
+      return Container(
+        height: 200.0,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(12.0),
+          ),
+          image: const DecorationImage(image: fallback, fit: BoxFit.fitWidth),
         ),
-        image: DecorationImage(image: provider, fit: BoxFit.fitWidth),
       );
     }
 
-    if (imageUrl == null || imageUrl!.isEmpty) {
-      return Container(height: 200.0, decoration: baseDecoration(fallback));
+    // carousel items
+    final items = widget.images.map((img) => _CarouselImage(url: img.path)).toList();
+
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(12.0),
+          ),
+          child: CarouselSlider(
+            items: items,
+            options: CarouselOptions(
+              height: 200.0,
+              viewportFraction: 1.0,
+              enableInfiniteScroll: widget.images.length > 1,
+              autoPlay: widget.images.length > 1,
+              autoPlayInterval: const Duration(seconds: 4),
+              onPageChanged: (i, _) => setState(() => _index = i),
+            ),
+          ),
+        ),
+
+        // dots indicator (kalau >1)
+        if (widget.images.length > 1)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.images.length, (i) {
+                final active = i == _index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 10 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: active ? Colors.white : Colors.white.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _CarouselImage extends StatelessWidget {
+  final String url;
+  const _CarouselImage({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    const fallback = AssetImage('assets/images/default_image.png');
+
+    if (url.trim().isEmpty) {
+      return Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(image: fallback, fit: BoxFit.fitWidth),
+        ),
+      );
     }
 
     return CachedNetworkImage(
-      imageUrl: imageUrl!,
+      imageUrl: url,
       imageBuilder: (context, imageProvider) {
-        return Container(height: 200.0, decoration: baseDecoration(imageProvider));
+        return Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: imageProvider, fit: BoxFit.fitWidth),
+          ),
+        );
       },
-      placeholder: (context, url) {
-        return Container(height: 200.0, decoration: baseDecoration(fallback));
-      },
-      errorWidget: (context, url, error) {
-        return Container(height: 200.0, decoration: baseDecoration(fallback));
-      },
+      placeholder: (context, _) => Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(image: fallback, fit: BoxFit.fitWidth),
+        ),
+      ),
+      errorWidget: (context, _, __) => Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(image: fallback, fit: BoxFit.fitWidth),
+        ),
+      ),
     );
   }
 }

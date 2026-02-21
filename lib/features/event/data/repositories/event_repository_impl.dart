@@ -15,7 +15,7 @@ class EventRepositoryImpl implements EventRepository {
   EventRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, EventModel>> eventList() async {
+  Future<Either<Failure, EventResponse>> eventList() async {
     try {
       var result = await remoteDataSource.eventList();
       return Right(result);
@@ -35,20 +35,23 @@ class EventRepositoryImpl implements EventRepository {
     required String startDate,
     required String endDate,
     required String startTime,
-    required String endTime
+    required String endTime,
   }) async {
     try {
-      var result =  await remoteDataSource.eventStore(
+      var result = await remoteDataSource.eventStore(
         id: id,
-        title: title, caption: caption, captionHtml: captionHtml,
+        title: title,
+        caption: caption,
+        captionHtml: captionHtml,
         startDate: startDate,
-        startTime: startTime, 
-        endDate: endDate, endTime: endTime
+        startTime: startTime,
+        endDate: endDate,
+        endTime: endTime,
       );
       return Right(result);
-    } on ServerException catch(e) { 
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {  
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
@@ -62,52 +65,50 @@ class EventRepositoryImpl implements EventRepository {
     required String startDate,
     required String endDate,
     required String startTime,
-    required String endTime
+    required String endTime,
   }) async {
     try {
-      var result =  await remoteDataSource.eventUpdate(
+      var result = await remoteDataSource.eventUpdate(
         id: id,
-        title: title, caption: caption, 
+        title: title,
+        caption: caption,
         captionHtml: captionHtml,
         startDate: startDate,
-        startTime: startTime, 
-        endDate: endDate, endTime: endTime
+        startTime: startTime,
+        endDate: endDate,
+        endTime: endTime,
       );
       return Right(result);
-    } on ServerException catch(e) { 
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {  
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, void>> eventDelete({
-    required String id
-  }) async {
-       try {
-      var result = await remoteDataSource.eventDelete(
-        id: id,
-      );
+  Future<Either<Failure, void>> eventDelete({required String id}) async {
+    try {
+      var result = await remoteDataSource.eventDelete(id: id);
       return Right(result);
-    } on ServerException catch(e) { 
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {  
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
-  
+
   @override
   Future<Either<Failure, void>> eventStoreImage({
-    required String path, 
-    required String eventId
+    required String path,
+    required String eventId,
   }) async {
     try {
       var result = await remoteDataSource.eventStoreImage(eventId: eventId, path: path);
       return Right(result);
-    } on ServerException catch(e) {
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
@@ -117,23 +118,22 @@ class EventRepositoryImpl implements EventRepository {
     try {
       var result = await remoteDataSource.eventDetail(id: id);
       return Right(result);
-    } on ServerException catch(e) {
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
-  
+
   @override
   Future<Either<Failure, void>> eventDeleteImage({required String eventId}) async {
     try {
       var result = await remoteDataSource.eventDeleteImage(eventId: eventId);
       return Right(result);
-    } on ServerException catch(e) {
+    } on ServerException catch (e) {
       return Left(ServerFailure(e.message.toString()));
-    } catch(e) {
+    } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
-
 }

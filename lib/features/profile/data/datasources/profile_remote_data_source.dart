@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 
 import 'dart:developer';
 
@@ -25,7 +24,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final response = await dio.get("${RemoteDataSourceConsts.baseUrl}/api/v1/profile/me");
       Map<String, dynamic> data = response.data;
       ProfileModel profileModel = ProfileModel.fromJson(data);
-      debugPrint(profileModel.data.fullname);
       return profileModel;
     } on DioException catch (e) {
       String message = handleDioException(e);
