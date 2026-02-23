@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 
 import 'dart:developer';
 
@@ -34,7 +33,8 @@ abstract class EventRemoteDataSource {
   });
   Future<void> eventDelete({required String id});
   Future<EventDetailResponse> eventDetail({required String id});
-  Future<void> eventStoreImage({required String eventId, required String path});
+  Future<void> eventAddImage({required String eventId, required String path});
+  Future<void> eventReplaceImage({required String eventId, required String path});
   Future<void> eventDeleteImage({required String eventId});
 }
 
@@ -48,12 +48,10 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
       EventResponse eventModel = EventResponse.fromJson(data);
       return eventModel;
     } on DioException catch (e) {
-      debugPrint("test1");
       String message = handleDioException(e);
       log(message);
       throw ServerException(message);
     } catch (e, stacktrace) {
-      debugPrint(stacktrace.toString());
       log(stacktrace.toString());
       throw Exception(e.toString());
     }
@@ -64,7 +62,7 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     try {
       final dio = DioHelper.shared.getClient();
       Response response = await dio.get(
-        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/detail/$id",
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/detail?uid=$id",
       );
       Map<String, dynamic> data = response.data;
       EventDetailResponse eventDetailModel = EventDetailResponse.fromJson(data);
@@ -116,6 +114,21 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   }
 
   @override
+  Future<void> eventDelete({required String id}) async {
+    try {
+      final dio = DioHelper.shared.getClient();
+      await dio.delete("${RemoteDataSourceConsts.baseUrl}/api/v1/event/delete?uid=$id");
+    } on DioException catch (e) {
+      String message = handleDioException(e);
+      log(message);
+      throw ServerException(message);
+    } catch (e, stacktrace) {
+      log(stacktrace.toString());
+      throw Exception(e.toString());
+    }
+  }
+
+  @override
   Future<void> eventUpdate({
     required String id,
     required String title,
@@ -152,12 +165,12 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   }
 
   @override
-  Future<void> eventStoreImage({required String eventId, required String path}) async {
+  Future<void> eventAddImage({required String eventId, required String path}) async {
     try {
       final dio = DioHelper.shared.getClient();
       await dio.post(
-        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/store-image",
-        data: {"event_id": eventId, "path": path},
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/image/add?uid=$eventId",
+        data: {"path": path},
       );
     } on DioException catch (e) {
       log(e.response!.data.toString());
@@ -171,11 +184,15 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   }
 
   @override
-  Future<void> eventDelete({required String id}) async {
+  Future<void> eventReplaceImage({required String eventId, required String path}) async {
     try {
       final dio = DioHelper.shared.getClient();
-      await dio.delete("${RemoteDataSourceConsts.baseUrl}/api/v1/event/delete", data: {"id": id});
+      await dio.post(
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/image/replace?uid=$eventId",
+        data: {"path": path},
+      );
     } on DioException catch (e) {
+      log(e.response!.data.toString());
       String message = handleDioException(e);
       log(message);
       throw ServerException(message);
@@ -189,12 +206,8 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   Future<void> eventDeleteImage({required String eventId}) async {
     try {
       final dio = DioHelper.shared.getClient();
-      await dio.delete(
-        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/delete-image",
-        data: {"id": eventId},
-      );
+      await dio.delete("${RemoteDataSourceConsts.baseUrl}/api/v1/event/image/delete?uid=$eventId");
     } on DioException catch (e) {
-      log(e.response!.data.toString());
       String message = handleDioException(e);
       log(message);
       throw ServerException(message);

@@ -56,7 +56,6 @@ class FormEventEditPageState extends State<FormEventEditPage> {
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  // ✅ FIX: jangan pakai initialValue karena tidak update setelah getData()
   final TextEditingController titleC = TextEditingController();
 
   String title = "";
@@ -83,7 +82,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
 
   // backend Go kamu menerima "2006-01-02 15:04:05" atau RFC3339
   // paling aman kirim RFC3339 UTC
-  String? _toRFC3339Utc(DateTime? dt) => dt == null ? null : dt.toUtc().toIso8601String();
+  // String? _toRFC3339Utc(DateTime? dt) => dt == null ? null : dt.toUtc().toIso8601String();
 
   Future<void> getData() async {
     await eventDetailNotifier.eventDetail(id: widget.id);
@@ -347,7 +346,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
           child: ListView(
             children: [
               TextFormField(
-                controller: titleC, // ✅ FIX
+                controller: titleC,
                 style: montserratRegular.copyWith(fontSize: 13.0),
                 decoration: InputDecoration(
                   labelText: 'Title',
@@ -577,7 +576,7 @@ class _ImagesCarousel extends StatelessWidget {
         Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.0),
               child: CarouselSlider.builder(
                 itemCount: images.length,
                 itemBuilder: (context, i, realIndex) {
@@ -590,7 +589,7 @@ class _ImagesCarousel extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () => onRemove(i),
                           child: Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(6.0),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.55),
                               borderRadius: BorderRadius.circular(99),

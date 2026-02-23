@@ -35,7 +35,6 @@ class EventDetailNotifier with ChangeNotifier {
         setStateProvider(ProviderState.error);
       },
       (success) {
-        // success diasumsikan bertipe EventDetailResponse (model terbaru)
         _entity = success.data;
         _message = "";
         setStateProvider(ProviderState.loaded);

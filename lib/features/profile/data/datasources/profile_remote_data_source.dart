@@ -7,7 +7,6 @@ import 'package:flutter_event/common/errors/exception.dart';
 import 'package:flutter_event/common/helpers/dio.dart';
 
 import 'package:flutter_event/features/auth/data/models/profile.dart';
-import 'package:flutter_event/features/event/data/models/event_detail.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<ProfileModel> getProfile();
