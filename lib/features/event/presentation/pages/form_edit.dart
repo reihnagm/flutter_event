@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:intl/intl.dart';
 
-import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:crypto/crypto.dart';
-import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -18,13 +15,10 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-import 'package:flutter_event/common/constants/remote_data_source_consts.dart';
 import 'package:flutter_event/common/helpers/enum.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 
-import 'package:flutter_event/features/event/presentation/provider/event_delete_image_notifier.dart';
-import 'package:flutter_event/features/event/presentation/provider/event_store_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_detail_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_update_notifier.dart';
 
@@ -51,8 +45,6 @@ class FormEventEditPage extends StatefulWidget {
 class FormEventEditPageState extends State<FormEventEditPage> {
   late EventDetailNotifier eventDetailNotifier;
   late EventUpdateNotifier eventUpdateNotifier;
-  late EventStoreImageNotifier eventStoreImageNotifier;
-  late EventDeleteImageNotifier eventDeleteImageNotifier;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -311,8 +303,6 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     super.initState();
     eventDetailNotifier = context.read<EventDetailNotifier>();
     eventUpdateNotifier = context.read<EventUpdateNotifier>();
-    eventStoreImageNotifier = context.read<EventStoreImageNotifier>();
-    eventDeleteImageNotifier = context.read<EventDeleteImageNotifier>();
     Future.microtask(getData);
   }
 

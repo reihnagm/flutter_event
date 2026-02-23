@@ -1,10 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:developer';
 
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
-import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:crypto/crypto.dart';
@@ -15,12 +12,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:flutter_event/common/constants/remote_data_source_consts.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 import 'package:flutter_event/common/helpers/enum.dart';
 
-import 'package:flutter_event/features/event/presentation/provider/event_store_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_store_notifier.dart';
 
 import 'package:flutter_event/shared/basewidgets/modal/modal.dart';
@@ -36,9 +31,8 @@ class FormEventCreatePage extends StatefulWidget {
 }
 
 class FormEventCreatePageState extends State<FormEventCreatePage> {
-
   late EventStoreNotifier eventStoreNotifier;
-  late EventStoreImageNotifier eventStoreImageNotifier;
+  // late EventStoreImageNotifier eventStoreImageNotifier;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -72,17 +66,11 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
 
     if (date == null) return;
 
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(now),
-    );
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(now));
 
     if (time == null) return;
 
-    final selected = DateTime(
-      date.year, date.month, date.day, 
-      time.hour, time.minute,
-    );
+    final selected = DateTime(date.year, date.month, date.day, time.hour, time.minute);
 
     setState(() {
       if (isStart) {
@@ -141,23 +129,22 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
   }
 
   Future<void> submit() async {
-
-    if(title.trim() == "") {
+    if (title.trim() == "") {
       ShowSnackbar.snackbarErr("Field title is required");
-      return; 
+      return;
     }
-    
+
     if (qcC.document.toPlainText().trim().isEmpty) {
       ShowSnackbar.snackbarErr("Field content is required");
       return;
     }
 
-    if(startDateTime == null) {
+    if (startDateTime == null) {
       ShowSnackbar.snackbarErr("Field start date time is required");
       return;
     }
 
-    if(endDateTime == null) {
+    if (endDateTime == null) {
       ShowSnackbar.snackbarErr("Field end date time is required");
       return;
     }
@@ -169,38 +156,42 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
 
     await eventStoreNotifier.eventStore(
       id: eventId,
-      title: title, caption: caption, captionHtml: captionHtml,
-      startDate: formatDate(startDateTime), startTime: formatTime(startDateTime), 
-      endDate: formatDate(endDateTime), endTime: formatTime(endDateTime)
+      title: title,
+      caption: caption,
+      captionHtml: captionHtml,
+      startDate: formatDate(startDateTime),
+      startTime: formatTime(startDateTime),
+      endDate: formatDate(endDateTime),
+      endTime: formatTime(endDateTime),
     );
 
-    if(images.isNotEmpty) {
-      CloudinaryPublic cloudinary = CloudinaryPublic(
-        RemoteDataSourceConsts.cloudName, 
-        RemoteDataSourceConsts.folderCloudName, 
-        cache: false
-      );
-      
-      for (File file in images) {
-        try {
-          CloudinaryResponse? response = await cloudinary.uploadFileInChunks(
-            CloudinaryFile.fromFile(file.path, resourceType: CloudinaryResourceType.Image),
-            onProgress: (int count, int total) {
-              var progress = (count / total) * 100;
-              log(progress.toString());
-            },
-          );
-          await eventStoreImageNotifier.eventStoreImage(
-            eventId: eventId, 
-            path: response!.secureUrl
-          );
-        } on DioException catch(e) {
-          log(e.response!.data.toString());
-        } catch(e, stacktrace) {
-          log(e.toString());
-          log(stacktrace.toString());
-        }
-      }
+    if (images.isNotEmpty) {
+      // CloudinaryPublic cloudinary = CloudinaryPublic(
+      //   RemoteDataSourceConsts.cloudName,
+      //   RemoteDataSourceConsts.folderCloudName,
+      //   cache: false,
+      // );
+
+      // for (File file in images) {
+      //   try {
+      // CloudinaryResponse? response = await cloudinary.uploadFileInChunks(
+      //   CloudinaryFile.fromFile(file.path, resourceType: CloudinaryResourceType.Image),
+      //   onProgress: (int count, int total) {
+      //     var progress = (count / total) * 100;
+      //     log(progress.toString());
+      //   },
+      // );
+      // await eventStoreImageNotifier.eventStoreImage(
+      //   eventId: eventId,
+      //   path: response!.secureUrl,
+      // );
+      //   } on DioException catch (e) {
+      //     log(e.response!.data.toString());
+      //   } catch (e, stacktrace) {
+      //     log(e.toString());
+      //     log(stacktrace.toString());
+      //   }
+      // }
     }
 
     if (mounted) {
@@ -208,12 +199,12 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
     }
   }
 
-  @override 
+  @override
   void initState() {
     super.initState();
 
     eventStoreNotifier = context.read<EventStoreNotifier>();
-    eventStoreImageNotifier = context.read<EventStoreImageNotifier>();
+    // eventStoreImageNotifier = context.read<EventStoreImageNotifier>();
   }
 
   @override
@@ -226,11 +217,7 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Create Event',
-          style: montserratRegular.copyWith(
-            fontSize: 13.0,
-          ),
-        ),
+        title: Text('Create Event', style: montserratRegular.copyWith(fontSize: 13.0)),
         leading: CupertinoNavigationBarBackButton(
           color: ColorResources.black,
           onPressed: () {
@@ -245,14 +232,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
           child: ListView(
             children: [
               TextFormField(
-                style: montserratRegular.copyWith(
-                  fontSize: 13.0
-                ),
+                style: montserratRegular.copyWith(fontSize: 13.0),
                 decoration: InputDecoration(
                   labelText: 'Title',
-                  labelStyle: montserratRegular.copyWith(
-                    fontSize: 13.0
-                  )
+                  labelStyle: montserratRegular.copyWith(fontSize: 13.0),
                 ),
                 onChanged: (String value) => title = value,
               ),
@@ -260,13 +243,9 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-
                   Container(
                     width: 100.0,
-                    margin: const EdgeInsets.only(
-                      top: 8.0,
-                      bottom: 8.0
-                    ),
+                    margin: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                     child: InkWell(
                       onTap: () async {
                         GDialog.quillToolbar(controller: qcC);
@@ -275,22 +254,20 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                         padding: const EdgeInsets.all(6.0),
                         child: Row(
                           children: [
-                            Text("Toolbar",
+                            Text(
+                              "Toolbar",
                               style: montserratRegular.copyWith(
                                 fontSize: 13.0,
-                                color: ColorResources.black
+                                color: ColorResources.black,
                               ),
                             ),
                             const SizedBox(width: 8.0),
-                            const Icon(Icons.edit_document,
-                              size: 16.0,
-                            ),
+                            const Icon(Icons.edit_document, size: 16.0),
                           ],
                         ),
                       ),
                     ),
                   ),
-
                 ],
               ),
 
@@ -301,108 +278,96 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                 ),
                 child: QuillEditor.basic(
                   controller: qcC,
-                  focusNode: qcFn, 
-                  config:  QuillEditorConfig(
+                  focusNode: qcFn,
+                  config: QuillEditorConfig(
                     minHeight: 220.0,
                     placeholder: "Add Content",
                     customStyles: DefaultStyles(
                       placeHolder: DefaultTextBlockStyle(
                         montserratRegular.copyWith(
-                          fontSize: 13.0, 
+                          fontSize: 13.0,
                           fontWeight: FontWeight.normal,
                           color: Colors.grey,
                         ),
                         const HorizontalSpacing(0, 0),
                         const VerticalSpacing(0, 0),
                         const VerticalSpacing(0, 0),
-                        null
-                      )
+                        null,
+                      ),
                     ),
-                    padding: const EdgeInsets.all(10.0)
-                  )
+                    padding: const EdgeInsets.all(10.0),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 16.0),
 
               ListTile(
-                title: startDateTime == null 
-                ? Text('Start DateTime',
-                    style: montserratRegular.copyWith(
-                      fontSize: 14.0
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: const BoxDecoration(
-                          color: ColorResources.black,
-                        ),
-                        child: Text(formatDate(startDateTime),
-                          style: montserratRegular.copyWith(
-                            fontSize: 13.0,
-                            color: ColorResources.white
+                title: startDateTime == null
+                    ? Text('Start DateTime', style: montserratRegular.copyWith(fontSize: 14.0))
+                    : Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: const BoxDecoration(color: ColorResources.black),
+                            child: Text(
+                              formatDate(startDateTime),
+                              style: montserratRegular.copyWith(
+                                fontSize: 13.0,
+                                color: ColorResources.white,
+                              ),
+                            ),
                           ),
-                        )
+                          const SizedBox(width: 10.0),
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: const BoxDecoration(color: ColorResources.black),
+                            child: Text(
+                              formatTime(startDateTime),
+                              style: montserratRegular.copyWith(
+                                fontSize: 13.0,
+                                color: ColorResources.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10.0),
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                         decoration: const BoxDecoration(
-                          color: ColorResources.black,
-                        ),
-                        child: Text(formatTime(startDateTime),
-                          style: montserratRegular.copyWith(
-                            fontSize: 13.0,
-                            color: ColorResources.white
-                          ),
-                        )
-                      )
-                    ],
-                  ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => pickDateTime(isStart: true),
               ),
 
               ListTile(
-                title: endDateTime == null 
-                ? Text('End DateTime',
-                    style: montserratRegular.copyWith(
-                      fontSize: 14.0
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: const BoxDecoration(
-                          color: ColorResources.black,
-                        ),
-                        child: Text(formatDate(endDateTime),
-                          style: montserratRegular.copyWith(
-                            fontSize: 13.0,
-                            color: ColorResources.white
+                title: endDateTime == null
+                    ? Text('End DateTime', style: montserratRegular.copyWith(fontSize: 14.0))
+                    : Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: const BoxDecoration(color: ColorResources.black),
+                            child: Text(
+                              formatDate(endDateTime),
+                              style: montserratRegular.copyWith(
+                                fontSize: 13.0,
+                                color: ColorResources.white,
+                              ),
+                            ),
                           ),
-                        )
+                          const SizedBox(width: 10.0),
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: const BoxDecoration(color: ColorResources.black),
+                            child: Text(
+                              formatTime(endDateTime),
+                              style: montserratRegular.copyWith(
+                                fontSize: 13.0,
+                                color: ColorResources.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10.0),
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                         decoration: const BoxDecoration(
-                          color: ColorResources.black,
-                        ),
-                        child: Text(formatTime(endDateTime),
-                          style: montserratRegular.copyWith(
-                            fontSize: 13.0,
-                            color: ColorResources.white
-                          ),
-                        )
-                      )
-                    ],
-                  ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => pickDateTime(isStart: false),
               ),
@@ -410,15 +375,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
               const SizedBox(height: 16.0),
 
               ElevatedButton.icon(
-                icon: const Icon(
-                  Icons.image,
-                  color: ColorResources.black,
-                ),
-                label: Text("Pick Images",
-                  style: montserratRegular.copyWith(
-                    fontSize: 14.0,
-                    color: ColorResources.black,
-                  ),
+                icon: const Icon(Icons.image, color: ColorResources.black),
+                label: Text(
+                  "Pick Images",
+                  style: montserratRegular.copyWith(fontSize: 14.0, color: ColorResources.black),
                 ),
                 onPressed: pickImages,
               ),
@@ -437,12 +397,7 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
-                          child: Image.file(
-                            imageFile,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
+                          child: Image.file(imageFile, width: 100, height: 100, fit: BoxFit.cover),
                         ),
                         Positioned(
                           top: 0,
@@ -458,11 +413,7 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                                 color: Colors.black.withOpacity(0.5),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 20,
-                              ),
+                              child: const Icon(Icons.close, color: Colors.white, size: 20),
                             ),
                           ),
                         ),
@@ -471,24 +422,21 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                   }).toList(),
                 ),
 
-
               const SizedBox(height: 20),
 
               ElevatedButton(
                 onPressed: submit,
-                child: context.watch<EventStoreNotifier>().state == ProviderState.loading 
-                ? const Center(
-                    child: SpinKitFadingCircle(
-                      color: ColorResources.black,
-                      size: 25.0
-                    ),
-                  )
-                : Text('Submit',
-                  style: montserratRegular.copyWith(
-                    fontSize: 16.0,
-                    color: ColorResources.black,
-                  ),
-                ),
+                child: context.watch<EventStoreNotifier>().state == ProviderState.loading
+                    ? const Center(
+                        child: SpinKitFadingCircle(color: ColorResources.black, size: 25.0),
+                      )
+                    : Text(
+                        'Submit',
+                        style: montserratRegular.copyWith(
+                          fontSize: 16.0,
+                          color: ColorResources.black,
+                        ),
+                      ),
               ),
             ],
           ),

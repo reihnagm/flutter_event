@@ -15,11 +15,9 @@ import 'package:flutter_event/common/helpers/dio.dart';
 import 'package:flutter_event/features/profile/domain/usecases/get_profile.dart';
 import 'package:flutter_event/features/profile/domain/usecases/update_profile.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_delete.dart';
-import 'package:flutter_event/features/event/domain/usecases/event_delete_image.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_detail.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_list.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_store.dart';
-import 'package:flutter_event/features/event/domain/usecases/event_store_image.dart';
 import 'package:flutter_event/features/event/domain/usecases/event_update.dart';
 import 'package:flutter_event/features/auth/domain/usecases/login.dart';
 import 'package:flutter_event/features/auth/domain/usecases/register.dart';
@@ -32,11 +30,9 @@ import 'package:flutter_event/features/auth/presentation/provider/login_notifier
 import 'package:flutter_event/features/profile/presentation/provider/profile_notifier.dart';
 import 'package:flutter_event/features/auth/presentation/provider/register_notifier.dart';
 
-import 'package:flutter_event/features/event/presentation/provider/event_delete_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_delete_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_detail_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_list_notifier.dart';
-import 'package:flutter_event/features/event/presentation/provider/event_store_image_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_store_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_update_notifier.dart';
 
@@ -90,8 +86,6 @@ void _registerUseCases() {
   locator.registerLazySingleton(() => EventDetailUseCase(locator<EventRepository>()));
   locator.registerLazySingleton(() => EventStoreUseCase(locator<EventRepository>()));
   locator.registerLazySingleton(() => EventUpdateUseCase(locator<EventRepository>()));
-  locator.registerLazySingleton(() => EventStoreImageUseCase(locator<EventRepository>()));
-  locator.registerLazySingleton(() => EventDeleteImageUseCase(locator<EventRepository>()));
   locator.registerLazySingleton(() => EventDeleteUseCase(locator<EventRepository>()));
 }
 
@@ -106,6 +100,4 @@ void _registerNotifiers() {
   locator.registerFactory(() => EventStoreNotifier(eventStoreUseCase: locator()));
   locator.registerFactory(() => EventUpdateNotifier(eventUpdateUseCase: locator()));
   locator.registerFactory(() => EventDeleteNotifier(eventDeleteUseCase: locator()));
-  locator.registerFactory(() => EventStoreImageNotifier(eventStoreUseCase: locator()));
-  locator.registerFactory(() => EventDeleteImageNotifier(eventDeleteUseCase: locator()));
 }
