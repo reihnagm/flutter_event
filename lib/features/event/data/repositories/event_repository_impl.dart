@@ -28,25 +28,25 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, void>> eventStore({
-    required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String endDate,
     required String startTime,
     required String endTime,
+    List<String>? images,
   }) async {
     try {
       final result = await remoteDataSource.eventStore(
-        id: id,
         title: title,
-        caption: caption,
-        captionHtml: captionHtml,
+        content: content,
+        contentHtml: contentHtml,
         startDate: startDate,
         startTime: startTime,
         endDate: endDate,
         endTime: endTime,
+        images: images,
       );
       return Right(result);
     } on ServerException catch (e) {
@@ -60,8 +60,8 @@ class EventRepositoryImpl implements EventRepository {
   Future<Either<Failure, void>> eventUpdate({
     required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String endDate,
     required String startTime,
@@ -71,8 +71,8 @@ class EventRepositoryImpl implements EventRepository {
       final result = await remoteDataSource.eventUpdate(
         id: id,
         title: title,
-        caption: caption,
-        captionHtml: captionHtml,
+        content: content,
+        contentHtml: contentHtml,
         startDate: startDate,
         startTime: startTime,
         endDate: endDate,

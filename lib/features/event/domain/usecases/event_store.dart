@@ -1,4 +1,3 @@
-
 import 'package:dartz/dartz.dart';
 
 import 'package:flutter_event/common/errors/failure.dart';
@@ -12,23 +11,24 @@ class EventStoreUseCase {
 
   Future<Either<Failure, void>> execute({
     required String id,
-    required String title, 
-    required String caption,
-    required String captionHtml,
+    required String title,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String endDate,
     required String startTime,
-    required String endTime
+    required String endTime,
+    List<String>? images,
   }) {
     return repository.eventStore(
-      id: id,
-      title: title, 
-      caption: caption,
-      captionHtml: captionHtml,
+      title: title,
+      content: content,
+      contentHtml: contentHtml,
       startDate: startDate,
       endDate: endDate,
       startTime: startTime,
       endTime: endTime,
+      images: images,
     );
   }
 }

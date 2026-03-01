@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:crypto/crypto.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -15,6 +17,7 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 import 'package:flutter_event/common/helpers/enum.dart';
+import 'package:flutter_event/common/constants/remote_data_source_consts.dart';
 
 import 'package:flutter_event/features/event/presentation/provider/event_store_notifier.dart';
 
@@ -151,48 +154,47 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
 
     String eventId = const Uuid().v4();
 
-    String caption = jsonEncode(qcC.document.toDelta().toJson());
-    String captionHtml = QuillDeltaToHtmlConverter(qcC.document.toDelta().toJson()).convert();
+    String content = jsonEncode(qcC.document.toDelta().toJson());
+    String contentHtml = QuillDeltaToHtmlConverter(qcC.document.toDelta().toJson()).convert();
+
+    final List<String> imageUrls = [];
+    if (images.isNotEmpty) {
+      try {
+        final cloudinary = CloudinaryPublic(
+          RemoteDataSourceConsts.cloudName,
+          RemoteDataSourceConsts.folderCloudName,
+          cache: false,
+        );
+
+        for (final file in images) {
+          final response = await cloudinary.uploadFileInChunks(
+            CloudinaryFile.fromFile(file.path, resourceType: CloudinaryResourceType.Image),
+            onProgress: (int count, int total) {
+              final progress = (count / total) * 100;
+              log('upload image: ${progress.toStringAsFixed(0)}%');
+            },
+          );
+          imageUrls.add(response.secureUrl);
+        }
+      } catch (e, stacktrace) {
+        log(e.toString());
+        log(stacktrace.toString());
+        ShowSnackbar.snackbarErr("Upload gambar gagal: $e");
+        return;
+      }
+    }
 
     await eventStoreNotifier.eventStore(
       id: eventId,
       title: title,
-      caption: caption,
-      captionHtml: captionHtml,
+      content: content,
+      contentHtml: contentHtml,
       startDate: formatDate(startDateTime),
       startTime: formatTime(startDateTime),
       endDate: formatDate(endDateTime),
       endTime: formatTime(endDateTime),
+      images: imageUrls,
     );
-
-    if (images.isNotEmpty) {
-      // CloudinaryPublic cloudinary = CloudinaryPublic(
-      //   RemoteDataSourceConsts.cloudName,
-      //   RemoteDataSourceConsts.folderCloudName,
-      //   cache: false,
-      // );
-
-      // for (File file in images) {
-      //   try {
-      // CloudinaryResponse? response = await cloudinary.uploadFileInChunks(
-      //   CloudinaryFile.fromFile(file.path, resourceType: CloudinaryResourceType.Image),
-      //   onProgress: (int count, int total) {
-      //     var progress = (count / total) * 100;
-      //     log(progress.toString());
-      //   },
-      // );
-      // await eventStoreImageNotifier.eventStoreImage(
-      //   eventId: eventId,
-      //   path: response!.secureUrl,
-      // );
-      //   } on DioException catch (e) {
-      //     log(e.response!.data.toString());
-      //   } catch (e, stacktrace) {
-      //     log(e.toString());
-      //     log(stacktrace.toString());
-      //   }
-      // }
-    }
 
     if (mounted) {
       Navigator.pop(context, "refetch");

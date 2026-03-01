@@ -8,10 +8,8 @@ import 'package:flutter_event/features/event/domain/usecases/event_store.dart';
 class EventStoreNotifier with ChangeNotifier {
   final EventStoreUseCase eventStoreUseCase;
 
-  EventStoreNotifier({
-    required this.eventStoreUseCase
-  });
-  
+  EventStoreNotifier({required this.eventStoreUseCase});
+
   ProviderState _state = ProviderState.idle;
   ProviderState get state => _state;
 
@@ -25,35 +23,38 @@ class EventStoreNotifier with ChangeNotifier {
   }
 
   Future<void> eventStore({
-    required String id, 
+    required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String startTime,
     required String endDate,
-    required String endTime
+    required String endTime,
+    List<String>? images,
   }) async {
     setStateProvider(ProviderState.loading);
 
     final result = await eventStoreUseCase.execute(
       id: id,
-      title: title, 
-      caption: caption,
-      captionHtml: captionHtml,
+      title: title,
+      content: content,
+      contentHtml: contentHtml,
       startDate: startDate,
       startTime: startTime,
       endDate: endDate,
-      endTime: endTime, 
+      endTime: endTime,
+      images: images,
     );
 
-    result.fold((l) {
-      _message = l.message;
-      setStateProvider(ProviderState.error);
-    }, (r) {
-      setStateProvider(ProviderState.loaded);
-    });
-
+    result.fold(
+      (l) {
+        _message = l.message;
+        setStateProvider(ProviderState.error);
+      },
+      (r) {
+        setStateProvider(ProviderState.loaded);
+      },
+    );
   }
-
 }

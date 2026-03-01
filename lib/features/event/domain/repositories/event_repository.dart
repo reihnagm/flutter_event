@@ -8,21 +8,21 @@ abstract class EventRepository {
   Future<Either<Failure, EventResponse>> eventList();
 
   Future<Either<Failure, void>> eventStore({
-    required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String endDate,
     required String startTime,
     required String endTime,
+    List<String>? images,
   });
 
   Future<Either<Failure, void>> eventUpdate({
     required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String endDate,
     required String startTime,
