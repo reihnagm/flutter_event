@@ -98,6 +98,7 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
           "content_html": contentHtml,
           "start_date": "$startDate $startTime:00",
           "end_date": "$endDate $endTime:00",
+          "images": images ?? [],
         },
       );
     } on DioException catch (e) {
