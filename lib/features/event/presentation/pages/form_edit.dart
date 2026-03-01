@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -97,12 +98,30 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     // ✅ images sekarang List<EventImage> -> convert jadi Media(network)
     images = entity.images;
 
-    // ✅ content string -> quill doc simple
-    // (kalau kamu ingin preserve formatting, backend harus simpan delta. sekarang backend hanya simpan string)
+    // ✅ content: parse Quill delta JSON kalau valid, fallback ke plain text
     final contentText = entity.content.trim();
+    Document contentDoc;
+
+    try {
+      final decoded = jsonDecode(contentText);
+
+      if (decoded is List) {
+        contentDoc = Document.fromJson(List<Map<String, dynamic>>.from(decoded));
+      } else if (decoded is Map && decoded['ops'] is List) {
+        contentDoc = Document.fromJson(List<Map<String, dynamic>>.from(decoded['ops']));
+      } else {
+        contentDoc = Document.fromDelta(Delta()..insert('$contentText\n'));
+      }
+    } catch (_) {
+      contentDoc = Document.fromDelta(Delta()..insert('$contentText\n'));
+    }
+
+    if (contentDoc.toPlainText().trim().isEmpty) {
+      contentDoc = Document.fromDelta(Delta()..insert('\n'));
+    }
+
     qcC = QuillController(
-      // ✅ tambah newline agar quill stabil
-      document: Document.fromDelta(Delta()..insert('$contentText\n')),
+      document: contentDoc,
       selection: const TextSelection.collapsed(offset: 0),
     );
 
