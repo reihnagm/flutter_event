@@ -12,10 +12,9 @@ import 'package:flutter_event/features/event/data/models/event_detail.dart';
 abstract class EventRemoteDataSource {
   Future<EventResponse> eventList();
   Future<void> eventStore({
-    required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String startTime,
     required String endDate,
@@ -24,8 +23,8 @@ abstract class EventRemoteDataSource {
   Future<void> eventUpdate({
     required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String startTime,
     required String endDate,
@@ -79,10 +78,9 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
 
   @override
   Future<void> eventStore({
-    required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String startTime,
     required String endDate,
@@ -91,16 +89,13 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     try {
       final dio = DioHelper.shared.getClient();
       await dio.post(
-        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/store",
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/create",
         data: {
-          "id": id,
           "title": title,
-          "caption": caption,
-          "caption_html": captionHtml,
-          "start_date": startDate,
-          "start_time": startTime,
-          "end_date": endDate,
-          "end_time": endTime,
+          "content": content,
+          "content_html": contentHtml,
+          "start_date": "$startDate $startTime:00",
+          "end_date": "$endDate $endTime:00",
         },
       );
     } on DioException catch (e) {
@@ -132,8 +127,8 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   Future<void> eventUpdate({
     required String id,
     required String title,
-    required String caption,
-    required String captionHtml,
+    required String content,
+    required String contentHtml,
     required String startDate,
     required String startTime,
     required String endDate,
@@ -142,16 +137,13 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     try {
       final dio = DioHelper.shared.getClient();
       await dio.put(
-        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/update",
+        "${RemoteDataSourceConsts.baseUrl}/api/v1/event/update?uid=$id",
         data: {
-          "id": id,
           "title": title,
-          "caption": caption,
-          "caption_html": captionHtml,
-          "start_date": startDate,
-          "start_time": startTime,
-          "end_date": endDate,
-          "end_time": endTime,
+          "content": content,
+          "content_html": contentHtml,
+          "start_date": "$startDate $startTime:00",
+          "end_date": "$endDate $endTime:00",
         },
       );
     } on DioException catch (e) {
