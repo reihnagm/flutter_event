@@ -8,10 +8,8 @@ import 'package:flutter_event/features/event/domain/usecases/event_update.dart';
 class EventUpdateNotifier with ChangeNotifier {
   final EventUpdateUseCase eventUpdateUseCase;
 
-  EventUpdateNotifier({
-    required this.eventUpdateUseCase
-  });
-  
+  EventUpdateNotifier({required this.eventUpdateUseCase});
+
   ProviderState _state = ProviderState.idle;
   ProviderState get state => _state;
 
@@ -25,35 +23,38 @@ class EventUpdateNotifier with ChangeNotifier {
   }
 
   Future<void> eventUpdate({
-    required String id, 
+    required String id,
     required String title,
     required String caption,
     required String captionHtml,
     required String startDate,
     required String startTime,
     required String endDate,
-    required String endTime
+    required String endTime,
+    List<String>? images,
   }) async {
     setStateProvider(ProviderState.loading);
 
     final result = await eventUpdateUseCase.execute(
       id: id,
-      title: title, 
-      caption: caption,
-      captionHtml: captionHtml,
+      title: title,
+      content: caption,
+      contentHtml: captionHtml,
       startDate: startDate,
       startTime: startTime,
       endDate: endDate,
-      endTime: endTime, 
+      endTime: endTime,
+      images: images,
     );
 
-    result.fold((l) {
-      _message = l.message;
-      setStateProvider(ProviderState.error);
-    }, (r) {
-      setStateProvider(ProviderState.loaded);
-    });
-
+    result.fold(
+      (l) {
+        _message = l.message;
+        setStateProvider(ProviderState.error);
+      },
+      (r) {
+        setStateProvider(ProviderState.loaded);
+      },
+    );
   }
-
 }

@@ -27,6 +27,7 @@ abstract class EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    List<String>? images,
   });
 
   Future<Either<Failure, void>> eventDelete({required String id});

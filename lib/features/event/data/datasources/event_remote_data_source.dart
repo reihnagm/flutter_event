@@ -30,6 +30,7 @@ abstract class EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    List<String>? images,
   });
   Future<void> eventDelete({required String id});
   Future<EventDetailResponse> eventDetail({required String id});
@@ -136,6 +137,7 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    List<String>? images,
   }) async {
     try {
       final dio = DioHelper.shared.getClient();
@@ -147,6 +149,7 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
           "content_html": contentHtml,
           "start_date": "$startDate $startTime:00",
           "end_date": "$endDate $endTime:00",
+          "images": images ?? [],
         },
       );
     } on DioException catch (e) {

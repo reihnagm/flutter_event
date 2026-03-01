@@ -66,6 +66,7 @@ class EventRepositoryImpl implements EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    List<String>? images,
   }) async {
     try {
       final result = await remoteDataSource.eventUpdate(
@@ -77,6 +78,7 @@ class EventRepositoryImpl implements EventRepository {
         startTime: startTime,
         endDate: endDate,
         endTime: endTime,
+        images: images,
       );
       return Right(result);
     } on ServerException catch (e) {
