@@ -7,6 +7,7 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:intl/intl.dart';
 
 import 'package:crypto/crypto.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -315,13 +316,31 @@ class FormEventEditPageState extends State<FormEventEditPage> {
           existingHashes.add(fileHash);
         }
 
-        // if (newImages.isNotEmpty) {
-        //   setState(() {
-        //     for (final f in newImages) {
-        //       images.add(Media(id: 444, path: f.path, file: f, type: "file"));
-        //     }
-        //   });
-        // }
+        if (newImages.isNotEmpty) {
+          try {
+            final cloudinary = CloudinaryPublic(
+              RemoteDataSourceConsts.cloudName,
+              RemoteDataSourceConsts.folderCloudName,
+              cache: false,
+            );
+
+            for (final f in newImages) {
+              final res = await cloudinary.uploadFileInChunks(
+                CloudinaryFile.fromFile(f.path, resourceType: CloudinaryResourceType.Image),
+              );
+              final url = res!.secureUrl;
+              if (url.trim().isNotEmpty) {
+                images.add(EventImage(id: 0, path: url));
+              }
+            }
+
+            if (mounted) {
+              setState(() {});
+            }
+          } catch (e) {
+            if (mounted) ShowSnackbar.snackbarErr('Upload image gagal: $e');
+          }
+        }
       }
     } catch (e, st) {
       log("File Picker Error: $e");
