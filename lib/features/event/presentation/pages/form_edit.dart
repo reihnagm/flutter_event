@@ -11,6 +11,7 @@ import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -74,6 +75,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
   bool isLoading = true;
   int _carouselIndex = 0;
   LatLng mapPoint = const LatLng(-6.2, 106.816666);
+  List<Map<String, dynamic>> placeSuggestions = [];
 
   // UI helper
   String _fmtDate(DateTime? dt) => dt == null ? "" : DateFormat('yyyy-MM-dd').format(dt.toLocal());
@@ -142,6 +144,47 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     setState(() {
       isLoading = false;
       _carouselIndex = 0;
+    });
+  }
+
+  Future<void> searchPlaces(String query) async {
+    final q = query.trim();
+    if (q.length < 3) {
+      setState(() => placeSuggestions = []);
+      return;
+    }
+    try {
+      final res = await Dio().get(
+        'https://nominatim.openstreetmap.org/search',
+        queryParameters: {'q': q, 'format': 'jsonv2', 'limit': 5},
+        options: Options(headers: {'User-Agent': 'flutter_event_app'}),
+      );
+      final list = (res.data as List?) ?? [];
+      setState(() {
+        placeSuggestions = list
+            .map((e) => {
+                  'name': e['display_name']?.toString() ?? '',
+                  'lat': double.tryParse(e['lat']?.toString() ?? ''),
+                  'lon': double.tryParse(e['lon']?.toString() ?? ''),
+                })
+            .where((e) => e['lat'] != null && e['lon'] != null)
+            .cast<Map<String, dynamic>>()
+            .toList();
+      });
+    } catch (_) {
+      setState(() => placeSuggestions = []);
+    }
+  }
+
+  void pickPlace(Map<String, dynamic> place) {
+    final lat = place['lat'] as double;
+    final lon = place['lon'] as double;
+    setState(() {
+      mapPoint = LatLng(lat, lon);
+      latitudeC.text = lat.toStringAsFixed(6);
+      longitudeC.text = lon.toStringAsFixed(6);
+      locationNameC.text = place['name']?.toString() ?? '';
+      placeSuggestions = [];
     });
   }
 
@@ -387,8 +430,25 @@ class FormEventEditPageState extends State<FormEventEditPage> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: locationNameC,
-                decoration: const InputDecoration(labelText: 'Location name (Maps)'),
+                decoration: const InputDecoration(labelText: 'Cari lokasi (autocomplete)'),
+                onChanged: searchPlaces,
               ),
+              if (placeSuggestions.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(top: 6),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  child: Column(
+                    children: placeSuggestions
+                        .map(
+                          (p) => ListTile(
+                            dense: true,
+                            title: Text(p['name'], maxLines: 2, overflow: TextOverflow.ellipsis),
+                            onTap: () => pickPlace(p),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
               const SizedBox(height: 8),
               SizedBox(
                 height: 220,
