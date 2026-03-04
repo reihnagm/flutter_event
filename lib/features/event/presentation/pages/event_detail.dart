@@ -182,7 +182,44 @@ class EventDetailPageState extends State<EventDetailPage> {
             SliverPadding(
               padding: const EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0, right: 16.0),
               sliver: SliverList(
-                delegate: SliverChildListDelegate([QuillEditor.basic(controller: qcC, config: const QuillEditorConfig(readOnly: true))]),
+                delegate: SliverChildListDelegate([
+                  if ((widget.event.locationName ?? '').trim().isNotEmpty ||
+                      widget.event.latitude != null ||
+                      widget.event.longitude != null ||
+                      (widget.event.mapsUrl ?? '').trim().isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lokasi Event',
+                            style: montserratRegular.copyWith(fontSize: 13.0, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 6),
+                          if ((widget.event.locationName ?? '').trim().isNotEmpty)
+                            Text(widget.event.locationName!, style: montserratRegular.copyWith(fontSize: 12.0)),
+                          if (widget.event.latitude != null && widget.event.longitude != null)
+                            Text(
+                              'Lat: ${widget.event.latitude} | Lng: ${widget.event.longitude}',
+                              style: montserratRegular.copyWith(fontSize: 12.0),
+                            ),
+                          if ((widget.event.mapsUrl ?? '').trim().isNotEmpty)
+                            SelectableText(
+                              widget.event.mapsUrl!,
+                              style: montserratRegular.copyWith(fontSize: 11.0, color: Colors.blueGrey),
+                            ),
+                        ],
+                      ),
+                    ),
+                  QuillEditor.basic(controller: qcC, config: const QuillEditorConfig()),
+                ]),
               ),
             ),
           ],
