@@ -161,20 +161,25 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
   }) async {
     try {
       final dio = DioHelper.shared.getClient();
+      final payload = {
+        "title": title,
+        "content": content,
+        "content_html": contentHtml,
+        "start_date": "$startDate $startTime:00",
+        "end_date": "$endDate $endTime:00",
+        "location_name": locationName,
+        "latitude": latitude,
+        "longitude": longitude,
+        "maps_url": mapsUrl,
+      };
+
+      if (images != null) {
+        payload["images"] = images;
+      }
+
       await dio.put(
         "${RemoteDataSourceConsts.baseUrl}/api/v1/event/update?uid=$id",
-        data: {
-          "title": title,
-          "content": content,
-          "content_html": contentHtml,
-          "start_date": "$startDate $startTime:00",
-          "end_date": "$endDate $endTime:00",
-          "location_name": locationName,
-          "latitude": latitude,
-          "longitude": longitude,
-          "maps_url": mapsUrl,
-          "images": images ?? [],
-        },
+        data: payload,
       );
     } on DioException catch (e) {
       String message = handleDioException(e);
