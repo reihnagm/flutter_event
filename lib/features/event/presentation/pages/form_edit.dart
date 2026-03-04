@@ -170,21 +170,17 @@ class FormEventEditPageState extends State<FormEventEditPage> {
       try {
         List<Map<String, dynamic>> mapped = [];
 
-        final token = RemoteDataSourceConsts.mapboxAccessToken;
+        final geoKey = RemoteDataSourceConsts.geoapifyApiKey;
 
-        // 1) Mapbox Geocoding (primary)
-        if (token.isNotEmpty) {
-          final url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/'
-              '${Uri.encodeComponent(q)}.json';
-
+        // 1) Geoapify Geocoding (primary, free no-CC)
+        if (geoKey.isNotEmpty) {
           final res = await Dio().get(
-            url,
+            'https://api.geoapify.com/v1/geocode/autocomplete',
             queryParameters: {
-              'access_token': token,
-              'autocomplete': true,
+              'text': q,
               'limit': 6,
-              'country': 'id',
-              'language': 'id,en',
+              'filter': 'countrycode:id',
+              'apiKey': geoKey,
             },
             options: Options(headers: {'Accept': 'application/json'}),
           );
@@ -199,15 +195,12 @@ class FormEventEditPageState extends State<FormEventEditPage> {
               .map((f) {
                 final fm = (f is Map) ? f : null;
                 if (fm == null) return null;
-                final center = (fm['center'] as List?) ?? [];
-                final lon = center.isNotEmpty ? (center[0] as num?)?.toDouble() : null;
-                final lat = center.length > 1 ? (center[1] as num?)?.toDouble() : null;
+                final props = (fm['properties'] is Map) ? fm['properties'] as Map : {};
+                final lat = (props['lat'] as num?)?.toDouble();
+                final lon = (props['lon'] as num?)?.toDouble();
                 if (lat == null || lon == null) return null;
-                return {
-                  'name': (fm['place_name'] ?? '').toString(),
-                  'lat': lat,
-                  'lon': lon,
-                };
+                final name = (props['formatted'] ?? props['address_line1'] ?? '').toString();
+                return {'name': name, 'lat': lat, 'lon': lon};
               })
               .whereType<Map<String, dynamic>>()
               .toList();
