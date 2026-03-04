@@ -7,6 +7,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 
 import 'package:flutter_event/common/utils/custom_themes.dart';
@@ -183,37 +186,80 @@ class EventDetailPageState extends State<EventDetailPage> {
               padding: const EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0, right: 16.0),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  if ((widget.event.locationName ?? '').trim().isNotEmpty ||
-                      widget.event.latitude != null ||
-                      widget.event.longitude != null ||
+                  if ((widget.event.latitude != null && widget.event.longitude != null) ||
                       (widget.event.mapsUrl ?? '').trim().isNotEmpty)
                     Container(
                       width: double.infinity,
+                      height: 220,
                       margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(12),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black12),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Stack(
                         children: [
-                          Text(
-                            'Lokasi Event',
-                            style: montserratRegular.copyWith(fontSize: 13.0, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 6),
-                          if ((widget.event.locationName ?? '').trim().isNotEmpty)
-                            Text(widget.event.locationName!, style: montserratRegular.copyWith(fontSize: 12.0)),
-                          if (widget.event.latitude != null && widget.event.longitude != null)
-                            Text(
-                              'Lat: ${widget.event.latitude} | Lng: ${widget.event.longitude}',
-                              style: montserratRegular.copyWith(fontSize: 12.0),
+                          FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                widget.event.latitude ?? -6.2,
+                                widget.event.longitude ?? 106.816666,
+                              ),
+                              initialZoom: 14,
                             ),
-                          if ((widget.event.mapsUrl ?? '').trim().isNotEmpty)
-                            SelectableText(
-                              widget.event.mapsUrl!,
-                              style: montserratRegular.copyWith(fontSize: 11.0, color: Colors.blueGrey),
+                            children: [
+                              TileLayer(
+                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.example.flutter_event',
+                              ),
+                              if (widget.event.latitude != null && widget.event.longitude != null)
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: LatLng(widget.event.latitude!, widget.event.longitude!),
+                                      width: 44,
+                                      height: 44,
+                                      child: const Icon(Icons.location_pin, color: Colors.red, size: 38),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: FloatingActionButton.small(
+                              heroTag: 'open-map-${widget.event.uid}',
+                              backgroundColor: Colors.black87,
+                              onPressed: () async {
+                                final direct = (widget.event.mapsUrl ?? '').trim();
+                                final fallback =
+                                    'https://www.openstreetmap.org/?mlat=${widget.event.latitude}&mlon=${widget.event.longitude}#map=16/${widget.event.latitude}/${widget.event.longitude}';
+                                final target = direct.isNotEmpty ? direct : fallback;
+                                final uri = Uri.parse(target);
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              },
+                              child: const Icon(Icons.directions, color: Colors.white),
+                            ),
+                          ),
+                          if ((widget.event.locationName ?? '').trim().isNotEmpty)
+                            Positioned(
+                              left: 8,
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  widget.event.locationName!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: montserratRegular.copyWith(fontSize: 12.0, color: Colors.white),
+                                ),
+                              ),
                             ),
                         ],
                       ),
