@@ -35,6 +35,10 @@ class EventRepositoryImpl implements EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   }) async {
     try {
@@ -46,6 +50,10 @@ class EventRepositoryImpl implements EventRepository {
         startTime: startTime,
         endDate: endDate,
         endTime: endTime,
+        locationName: locationName,
+        latitude: latitude,
+        longitude: longitude,
+        mapsUrl: mapsUrl,
         images: images,
       );
       return Right(result);
@@ -66,6 +74,10 @@ class EventRepositoryImpl implements EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   }) async {
     try {
@@ -78,6 +90,10 @@ class EventRepositoryImpl implements EventRepository {
         startTime: startTime,
         endDate: endDate,
         endTime: endTime,
+        locationName: locationName,
+        latitude: latitude,
+        longitude: longitude,
+        mapsUrl: mapsUrl,
         images: images,
       );
       return Right(result);

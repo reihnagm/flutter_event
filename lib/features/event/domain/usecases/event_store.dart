@@ -18,6 +18,10 @@ class EventStoreUseCase {
     required String endDate,
     required String startTime,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   }) {
     return repository.eventStore(
@@ -28,6 +32,10 @@ class EventStoreUseCase {
       endDate: endDate,
       startTime: startTime,
       endTime: endTime,
+      locationName: locationName,
+      latitude: latitude,
+      longitude: longitude,
+      mapsUrl: mapsUrl,
       images: images,
     );
   }

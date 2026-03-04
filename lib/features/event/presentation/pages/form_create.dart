@@ -43,6 +43,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
   FocusNode qcFn = FocusNode();
 
   String title = "";
+  String locationName = "";
+  String latitudeText = "";
+  String longitudeText = "";
+  String mapsUrl = "";
   DateTime? startDateTime;
   DateTime? endDateTime;
   List<File> images = [];
@@ -174,7 +178,7 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
               log('upload image: ${progress.toStringAsFixed(0)}%');
             },
           );
-          imageUrls.add(response.secureUrl);
+          imageUrls.add(response!.secureUrl);
         }
       } catch (e, stacktrace) {
         log(e.toString());
@@ -183,6 +187,9 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
         return;
       }
     }
+
+    final latitude = double.tryParse(latitudeText.trim());
+    final longitude = double.tryParse(longitudeText.trim());
 
     await eventStoreNotifier.eventStore(
       id: eventId,
@@ -193,6 +200,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
       startTime: formatTime(startDateTime),
       endDate: formatDate(endDateTime),
       endTime: formatTime(endDateTime),
+      locationName: locationName.trim().isEmpty ? null : locationName.trim(),
+      latitude: latitude,
+      longitude: longitude,
+      mapsUrl: mapsUrl.trim().isEmpty ? null : mapsUrl.trim(),
       images: imageUrls,
     );
 
@@ -240,6 +251,32 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                   labelStyle: montserratRegular.copyWith(fontSize: 13.0),
                 ),
                 onChanged: (String value) => title = value,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                style: montserratRegular.copyWith(fontSize: 13.0),
+                decoration: InputDecoration(
+                  labelText: 'Location name (Maps)',
+                  labelStyle: montserratRegular.copyWith(fontSize: 13.0),
+                ),
+                onChanged: (v) => locationName = v,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(labelText: 'Latitude (optional)'),
+                onChanged: (v) => latitudeText = v,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(labelText: 'Longitude (optional)'),
+                onChanged: (v) => longitudeText = v,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Google Maps URL (optional)'),
+                onChanged: (v) => mapsUrl = v,
               ),
 
               Row(

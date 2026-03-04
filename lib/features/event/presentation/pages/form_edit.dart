@@ -50,6 +50,10 @@ class FormEventEditPageState extends State<FormEventEditPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final TextEditingController titleC = TextEditingController();
+  final TextEditingController locationNameC = TextEditingController();
+  final TextEditingController latitudeC = TextEditingController();
+  final TextEditingController longitudeC = TextEditingController();
+  final TextEditingController mapsUrlC = TextEditingController();
 
   String title = "";
   String eventUid = ""; // penting untuk delete/add image via uid
@@ -91,6 +95,10 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     eventUid = entity.uid;
     title = entity.title;
     titleC.text = entity.title;
+    locationNameC.text = entity.locationName ?? '';
+    latitudeC.text = entity.latitude?.toString() ?? '';
+    longitudeC.text = entity.longitude?.toString() ?? '';
+    mapsUrlC.text = entity.mapsUrl ?? '';
 
     startDateTimeDB = entity.startDate;
     endDateTimeDB = entity.endDate;
@@ -304,15 +312,21 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     // }
     // }
 
-    // 3) update event: title, content, start_date, end_date
-    // await eventUpdateNotifier.eventUpdate(
-    // kalau backend update pakai uid, kamu bisa kirim eventUid di sini
-    //   id: widget.id,
-    //   title: title.trim(),
-    //   content: contentPlain,
-    //   startDate: _toRFC3339Utc(finalStart),
-    //   endDate: _toRFC3339Utc(finalEnd),
-    // );
+    await eventUpdateNotifier.eventUpdate(
+      id: eventUid,
+      title: title.trim(),
+      caption: jsonEncode(qcC.document.toDelta().toJson()),
+      captionHtml: '',
+      startDate: _fmtDate(finalStart),
+      startTime: _fmtTime(finalStart),
+      endDate: _fmtDate(finalEnd),
+      endTime: _fmtTime(finalEnd),
+      locationName: locationNameC.text.trim().isEmpty ? null : locationNameC.text.trim(),
+      latitude: double.tryParse(latitudeC.text.trim()),
+      longitude: double.tryParse(longitudeC.text.trim()),
+      mapsUrl: mapsUrlC.text.trim().isEmpty ? null : mapsUrlC.text.trim(),
+      images: null,
+    );
 
     if (mounted) Navigator.pop(context, "refetch");
   }
@@ -328,6 +342,10 @@ class FormEventEditPageState extends State<FormEventEditPage> {
   @override
   void dispose() {
     titleC.dispose();
+    locationNameC.dispose();
+    latitudeC.dispose();
+    longitudeC.dispose();
+    mapsUrlC.dispose();
     qcC.dispose();
     qcFn.dispose();
     super.dispose();
@@ -362,6 +380,28 @@ class FormEventEditPageState extends State<FormEventEditPage> {
                   labelStyle: montserratRegular.copyWith(fontSize: 13.0),
                 ),
                 onChanged: (v) => title = v,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: locationNameC,
+                decoration: const InputDecoration(labelText: 'Location name (Maps)'),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: latitudeC,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(labelText: 'Latitude (optional)'),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: longitudeC,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(labelText: 'Longitude (optional)'),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: mapsUrlC,
+                decoration: const InputDecoration(labelText: 'Google Maps URL (optional)'),
               ),
 
               Row(

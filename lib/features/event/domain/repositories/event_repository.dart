@@ -15,6 +15,10 @@ abstract class EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   });
 
@@ -27,6 +31,10 @@ abstract class EventRepository {
     required String endDate,
     required String startTime,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   });
 

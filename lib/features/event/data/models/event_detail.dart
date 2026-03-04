@@ -26,6 +26,10 @@ class EventDetail {
   final String uid;
   final String title;
   final String content;
+  final String? locationName;
+  final double? latitude;
+  final double? longitude;
+  final String? mapsUrl;
   final DateTime? startDate;
   final DateTime? endDate;
   final DateTime? createdAt;
@@ -38,6 +42,10 @@ class EventDetail {
     required this.uid,
     required this.title,
     required this.content,
+    required this.locationName,
+    required this.latitude,
+    required this.longitude,
+    required this.mapsUrl,
     required this.startDate,
     required this.endDate,
     required this.createdAt,
@@ -52,6 +60,10 @@ class EventDetail {
       uid: json['uid'] ?? '',
       title: json['title'] ?? '',
       content: json['content'] ?? '',
+      locationName: json['location_name'],
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      mapsUrl: json['maps_url'],
       startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
       endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,

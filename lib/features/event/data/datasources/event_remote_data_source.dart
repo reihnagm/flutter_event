@@ -19,6 +19,10 @@ abstract class EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   });
   Future<void> eventUpdate({
@@ -30,6 +34,10 @@ abstract class EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   });
   Future<void> eventDelete({required String id});
@@ -87,6 +95,10 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   }) async {
     try {
@@ -99,6 +111,10 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
           "content_html": contentHtml,
           "start_date": "$startDate $startTime:00",
           "end_date": "$endDate $endTime:00",
+          "location_name": locationName,
+          "latitude": latitude,
+          "longitude": longitude,
+          "maps_url": mapsUrl,
           "images": images ?? [],
         },
       );
@@ -137,6 +153,10 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
     required String startTime,
     required String endDate,
     required String endTime,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? mapsUrl,
     List<String>? images,
   }) async {
     try {
@@ -149,6 +169,10 @@ class EventRemoteDataSourceImpl implements EventRemoteDataSource {
           "content_html": contentHtml,
           "start_date": "$startDate $startTime:00",
           "end_date": "$endDate $endTime:00",
+          "location_name": locationName,
+          "latitude": latitude,
+          "longitude": longitude,
+          "maps_url": mapsUrl,
           "images": images ?? [],
         },
       );
