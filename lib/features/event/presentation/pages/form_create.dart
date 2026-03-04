@@ -158,21 +158,24 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
     _placeDebounce = Timer(const Duration(milliseconds: 450), () async {
       try {
         setState(() => isSearchingPlace = true);
-        final res = await Dio().get(
-          'https://nominatim.openstreetmap.org/search',
-          queryParameters: {
-            'q': q,
-            'format': 'jsonv2',
-            'limit': 5,
-            'countrycodes': 'id',
-            'addressdetails': 1,
-          },
-          options: Options(headers: {'User-Agent': 'flutter_event_app'}),
-        );
-        final list = (res.data as List?) ?? [];
-        if (!mounted) return;
-        setState(() {
-          placeSuggestions = list
+
+        List<Map<String, dynamic>> mapped = [];
+
+        // primary: Nominatim OSM
+        try {
+          final res = await Dio().get(
+            'https://nominatim.openstreetmap.org/search',
+            queryParameters: {
+              'q': q,
+              'format': 'jsonv2',
+              'limit': 5,
+              'countrycodes': 'id',
+              'addressdetails': 1,
+            },
+            options: Options(headers: {'User-Agent': 'BantuMasjidEventApp/1.0'}),
+          );
+          final list = (res.data as List?) ?? [];
+          mapped = list
               .map((e) => {
                     'name': e['display_name']?.toString() ?? '',
                     'lat': double.tryParse(e['lat']?.toString() ?? ''),
@@ -181,6 +184,40 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
               .where((e) => e['lat'] != null && e['lon'] != null)
               .cast<Map<String, dynamic>>()
               .toList();
+        } catch (_) {
+          // fallback below
+        }
+
+        // fallback: Photon (no API key)
+        if (mapped.isEmpty) {
+          final res2 = await Dio().get(
+            'https://photon.komoot.io/api/',
+            queryParameters: {'q': q, 'limit': 5},
+          );
+          final feats = (res2.data?['features'] as List?) ?? [];
+          mapped = feats
+              .map((f) {
+                final props = (f['properties'] as Map?) ?? {};
+                final coords = (f['geometry']?['coordinates'] as List?) ?? [];
+                final lon = coords.isNotEmpty ? (coords[0] as num?)?.toDouble() : null;
+                final lat = coords.length > 1 ? (coords[1] as num?)?.toDouble() : null;
+                final name = [
+                  props['name'],
+                  props['street'],
+                  props['district'],
+                  props['city'],
+                  props['state'],
+                ].where((x) => (x ?? '').toString().trim().isNotEmpty).join(', ');
+                return {'name': name, 'lat': lat, 'lon': lon};
+              })
+              .where((e) => e['lat'] != null && e['lon'] != null)
+              .cast<Map<String, dynamic>>()
+              .toList();
+        }
+
+        if (!mounted) return;
+        setState(() {
+          placeSuggestions = mapped;
           isSearchingPlace = false;
         });
       } catch (_) {
