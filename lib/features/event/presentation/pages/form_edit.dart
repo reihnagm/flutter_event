@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:flutter_event/common/helpers/enum.dart';
+import 'package:flutter_event/common/constants/remote_data_source_consts.dart';
 import 'package:flutter_event/common/utils/color_resources.dart';
 import 'package:flutter_event/common/utils/custom_themes.dart';
 
@@ -162,81 +163,91 @@ class FormEventEditPageState extends State<FormEventEditPage> {
       return;
     }
 
-    _placeDebounce = Timer(const Duration(milliseconds: 450), () async {
+    _placeDebounce = Timer(const Duration(milliseconds: 400), () async {
       if (!mounted) return;
       setState(() => isSearchingPlace = true);
 
       try {
         List<Map<String, dynamic>> mapped = [];
 
-        // 1) Nominatim
-        try {
+        final token = RemoteDataSourceConsts.mapboxAccessToken;
+
+        // 1) Mapbox Geocoding (primary)
+        if (token.isNotEmpty) {
+          final url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/'
+              '${Uri.encodeComponent(q)}.json';
+
           final res = await Dio().get(
-            'https://nominatim.openstreetmap.org/search',
+            url,
             queryParameters: {
-              'q': q,
-              'format': 'json',
-              'limit': 5,
+              'access_token': token,
+              'autocomplete': true,
+              'limit': 6,
+              'country': 'id',
+              'language': 'id,en',
             },
-            options: Options(headers: {
-              'User-Agent': 'BantuMasjidEventApp/1.0',
-              'Accept': 'application/json',
-            }),
+            options: Options(headers: {'Accept': 'application/json'}),
           );
 
           final raw = res.data;
-          final List list = raw is List
+          final Map data = raw is Map
               ? raw
-              : (raw is String ? (jsonDecode(raw) as List? ?? []) : []);
+              : (raw is String ? (jsonDecode(raw) as Map? ?? {}) : {});
+          final feats = (data['features'] as List?) ?? [];
 
-          for (final item in list) {
-            final m = (item is Map) ? item : null;
-            if (m == null) continue;
-            final lat = double.tryParse('${m['lat'] ?? ''}');
-            final lon = double.tryParse('${m['lon'] ?? ''}');
-            if (lat == null || lon == null) continue;
-            mapped.add({
-              'name': '${m['display_name'] ?? ''}',
-              'lat': lat,
-              'lon': lon,
-            });
-          }
-        } catch (_) {}
+          mapped = feats
+              .map((f) {
+                final fm = (f is Map) ? f : null;
+                if (fm == null) return null;
+                final center = (fm['center'] as List?) ?? [];
+                final lon = center.isNotEmpty ? (center[0] as num?)?.toDouble() : null;
+                final lat = center.length > 1 ? (center[1] as num?)?.toDouble() : null;
+                if (lat == null || lon == null) return null;
+                return {
+                  'name': (fm['place_name'] ?? '').toString(),
+                  'lat': lat,
+                  'lon': lon,
+                };
+              })
+              .whereType<Map<String, dynamic>>()
+              .toList();
+        }
 
-        // 2) Photon fallback
+        // 2) Photon fallback (no key)
         if (mapped.isEmpty) {
           final res2 = await Dio().get(
             'https://photon.komoot.io/api/',
-            queryParameters: {'q': q, 'limit': 5},
+            queryParameters: {'q': q, 'limit': 6},
             options: Options(headers: {'Accept': 'application/json'}),
           );
 
           final raw2 = res2.data;
-          final Map data = raw2 is Map
+          final Map data2 = raw2 is Map
               ? raw2
               : (raw2 is String ? (jsonDecode(raw2) as Map? ?? {}) : {});
-          final feats = (data['features'] as List?) ?? [];
+          final feats2 = (data2['features'] as List?) ?? [];
 
-          for (final f in feats) {
-            final fm = (f is Map) ? f : null;
-            if (fm == null) continue;
-            final props = (fm['properties'] is Map) ? fm['properties'] as Map : {};
-            final geom = (fm['geometry'] is Map) ? fm['geometry'] as Map : {};
-            final coords = (geom['coordinates'] as List?) ?? [];
-            final lon = coords.isNotEmpty ? (coords[0] as num?)?.toDouble() : null;
-            final lat = coords.length > 1 ? (coords[1] as num?)?.toDouble() : null;
-            if (lat == null || lon == null) continue;
-
-            final name = [
-              props['name'],
-              props['street'],
-              props['district'],
-              props['city'],
-              props['state'],
-            ].where((x) => (x ?? '').toString().trim().isNotEmpty).join(', ');
-
-            mapped.add({'name': name, 'lat': lat, 'lon': lon});
-          }
+          mapped = feats2
+              .map((f) {
+                final fm = (f is Map) ? f : null;
+                if (fm == null) return null;
+                final props = (fm['properties'] is Map) ? fm['properties'] as Map : {};
+                final geom = (fm['geometry'] is Map) ? fm['geometry'] as Map : {};
+                final coords = (geom['coordinates'] as List?) ?? [];
+                final lon = coords.isNotEmpty ? (coords[0] as num?)?.toDouble() : null;
+                final lat = coords.length > 1 ? (coords[1] as num?)?.toDouble() : null;
+                if (lat == null || lon == null) return null;
+                final name = [
+                  props['name'],
+                  props['street'],
+                  props['district'],
+                  props['city'],
+                  props['state'],
+                ].where((x) => (x ?? '').toString().trim().isNotEmpty).join(', ');
+                return {'name': name, 'lat': lat, 'lon': lon};
+              })
+              .whereType<Map<String, dynamic>>()
+              .toList();
         }
 
         if (!mounted) return;
