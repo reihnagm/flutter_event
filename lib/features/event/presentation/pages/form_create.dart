@@ -193,8 +193,6 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
     });
   }
 
-  }
-
   void pickPlace(Map<String, dynamic> place) {
     final lat = place['lat'] as double;
     final lon = place['lon'] as double;
