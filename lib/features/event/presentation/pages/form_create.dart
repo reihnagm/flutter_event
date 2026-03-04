@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:developer';
@@ -55,6 +56,8 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
   LatLng mapPoint = const LatLng(-6.2, 106.816666);
   final TextEditingController locationSearchC = TextEditingController();
   List<Map<String, dynamic>> placeSuggestions = [];
+  Timer? _placeDebounce;
+  bool isSearchingPlace = false;
 
   String formatDate(DateTime? dateTime) {
     if (dateTime == null) return 'Select DateTime';
@@ -142,31 +145,54 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
 
   Future<void> searchPlaces(String query) async {
     final q = query.trim();
+    _placeDebounce?.cancel();
+
     if (q.length < 3) {
-      setState(() => placeSuggestions = []);
+      setState(() {
+        isSearchingPlace = false;
+        placeSuggestions = [];
+      });
       return;
     }
-    try {
-      final res = await Dio().get(
-        'https://nominatim.openstreetmap.org/search',
-        queryParameters: {'q': q, 'format': 'jsonv2', 'limit': 5},
-        options: Options(headers: {'User-Agent': 'flutter_event_app'}),
-      );
-      final list = (res.data as List?) ?? [];
-      setState(() {
-        placeSuggestions = list
-            .map((e) => {
-                  'name': e['display_name']?.toString() ?? '',
-                  'lat': double.tryParse(e['lat']?.toString() ?? ''),
-                  'lon': double.tryParse(e['lon']?.toString() ?? ''),
-                })
-            .where((e) => e['lat'] != null && e['lon'] != null)
-            .cast<Map<String, dynamic>>()
-            .toList();
-      });
-    } catch (_) {
-      setState(() => placeSuggestions = []);
-    }
+
+    _placeDebounce = Timer(const Duration(milliseconds: 450), () async {
+      try {
+        setState(() => isSearchingPlace = true);
+        final res = await Dio().get(
+          'https://nominatim.openstreetmap.org/search',
+          queryParameters: {
+            'q': q,
+            'format': 'jsonv2',
+            'limit': 5,
+            'countrycodes': 'id',
+            'addressdetails': 1,
+          },
+          options: Options(headers: {'User-Agent': 'flutter_event_app'}),
+        );
+        final list = (res.data as List?) ?? [];
+        if (!mounted) return;
+        setState(() {
+          placeSuggestions = list
+              .map((e) => {
+                    'name': e['display_name']?.toString() ?? '',
+                    'lat': double.tryParse(e['lat']?.toString() ?? ''),
+                    'lon': double.tryParse(e['lon']?.toString() ?? ''),
+                  })
+              .where((e) => e['lat'] != null && e['lon'] != null)
+              .cast<Map<String, dynamic>>()
+              .toList();
+          isSearchingPlace = false;
+        });
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          isSearchingPlace = false;
+          placeSuggestions = [];
+        });
+      }
+    });
+  }
+
   }
 
   void pickPlace(Map<String, dynamic> place) {
@@ -312,6 +338,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                   locationName = v;
                   searchPlaces(v);
                 },
+              ),
+              if (isSearchingPlace) const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: LinearProgressIndicator(minHeight: 2),
               ),
               if (placeSuggestions.isNotEmpty)
                 Container(
