@@ -455,7 +455,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
       latitude: double.tryParse(latitudeC.text.trim()),
       longitude: double.tryParse(longitudeC.text.trim()),
       mapsUrl: (double.tryParse(latitudeC.text.trim()) != null && double.tryParse(longitudeC.text.trim()) != null) ? 'https://www.openstreetmap.org/?mlat=${double.tryParse(latitudeC.text.trim())}&mlon=${double.tryParse(longitudeC.text.trim())}#map=16/${double.tryParse(latitudeC.text.trim())}/${double.tryParse(longitudeC.text.trim())}' : null,
-      images: null,
+      images: images.map((e) => e.path).where((p) => p.trim().isNotEmpty).toList(),
     );
 
     if (mounted) Navigator.pop(context, "refetch");
