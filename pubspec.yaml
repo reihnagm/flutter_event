@@ -38,6 +38,8 @@ dependencies:
   file_picker: ^10.1.9
   flutter_html: ^3.0.0
   flutter_dotenv: ^6.0.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
   # G
   get_it: ^9.2.0

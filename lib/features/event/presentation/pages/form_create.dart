@@ -9,6 +9,8 @@ import 'package:crypto/crypto.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
@@ -46,10 +48,10 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
   String locationName = "";
   String latitudeText = "";
   String longitudeText = "";
-  String mapsUrl = "";
   DateTime? startDateTime;
   DateTime? endDateTime;
   List<File> images = [];
+  LatLng mapPoint = const LatLng(-6.2, 106.816666);
 
   String formatDate(DateTime? dateTime) {
     if (dateTime == null) return 'Select DateTime';
@@ -203,7 +205,7 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
       locationName: locationName.trim().isEmpty ? null : locationName.trim(),
       latitude: latitude,
       longitude: longitude,
-      mapsUrl: mapsUrl.trim().isEmpty ? null : mapsUrl.trim(),
+      mapsUrl: (latitude != null && longitude != null) ? 'https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=16/${latitude}/${longitude}' : null,
       images: imageUrls,
     );
 
@@ -262,22 +264,43 @@ class FormEventCreatePageState extends State<FormEventCreatePage> {
                 onChanged: (v) => locationName = v,
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                decoration: const InputDecoration(labelText: 'Latitude (optional)'),
-                onChanged: (v) => latitudeText = v,
+              SizedBox(
+                height: 220,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: mapPoint,
+                      initialZoom: 13,
+                      onTap: (tapPos, point) {
+                        setState(() {
+                          mapPoint = point;
+                          latitudeText = point.latitude.toStringAsFixed(6);
+                          longitudeText = point.longitude.toStringAsFixed(6);
+                        });
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.flutter_event',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: mapPoint,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.location_pin, color: Colors.red, size: 36),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                decoration: const InputDecoration(labelText: 'Longitude (optional)'),
-                onChanged: (v) => longitudeText = v,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Google Maps URL (optional)'),
-                onChanged: (v) => mapsUrl = v,
-              ),
+              Text('Lat: $latitudeText | Lng: $longitudeText', style: montserratRegular.copyWith(fontSize: 12)),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

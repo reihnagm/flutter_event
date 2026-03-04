@@ -11,6 +11,8 @@ import 'package:flutter_event/snackbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 import 'package:provider/provider.dart';
@@ -53,7 +55,6 @@ class FormEventEditPageState extends State<FormEventEditPage> {
   final TextEditingController locationNameC = TextEditingController();
   final TextEditingController latitudeC = TextEditingController();
   final TextEditingController longitudeC = TextEditingController();
-  final TextEditingController mapsUrlC = TextEditingController();
 
   String title = "";
   String eventUid = ""; // penting untuk delete/add image via uid
@@ -72,6 +73,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
 
   bool isLoading = true;
   int _carouselIndex = 0;
+  LatLng mapPoint = const LatLng(-6.2, 106.816666);
 
   // UI helper
   String _fmtDate(DateTime? dt) => dt == null ? "" : DateFormat('yyyy-MM-dd').format(dt.toLocal());
@@ -98,7 +100,9 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     locationNameC.text = entity.locationName ?? '';
     latitudeC.text = entity.latitude?.toString() ?? '';
     longitudeC.text = entity.longitude?.toString() ?? '';
-    mapsUrlC.text = entity.mapsUrl ?? '';
+    if (entity.latitude != null && entity.longitude != null) {
+      mapPoint = LatLng(entity.latitude!, entity.longitude!);
+    }
 
     startDateTimeDB = entity.startDate;
     endDateTimeDB = entity.endDate;
@@ -324,7 +328,7 @@ class FormEventEditPageState extends State<FormEventEditPage> {
       locationName: locationNameC.text.trim().isEmpty ? null : locationNameC.text.trim(),
       latitude: double.tryParse(latitudeC.text.trim()),
       longitude: double.tryParse(longitudeC.text.trim()),
-      mapsUrl: mapsUrlC.text.trim().isEmpty ? null : mapsUrlC.text.trim(),
+      mapsUrl: (double.tryParse(latitudeC.text.trim()) != null && double.tryParse(longitudeC.text.trim()) != null) ? 'https://www.openstreetmap.org/?mlat=${double.tryParse(latitudeC.text.trim())}&mlon=${double.tryParse(longitudeC.text.trim())}#map=16/${double.tryParse(latitudeC.text.trim())}/${double.tryParse(longitudeC.text.trim())}' : null,
       images: null,
     );
 
@@ -345,7 +349,6 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     locationNameC.dispose();
     latitudeC.dispose();
     longitudeC.dispose();
-    mapsUrlC.dispose();
     qcC.dispose();
     qcFn.dispose();
     super.dispose();
@@ -387,22 +390,43 @@ class FormEventEditPageState extends State<FormEventEditPage> {
                 decoration: const InputDecoration(labelText: 'Location name (Maps)'),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: latitudeC,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                decoration: const InputDecoration(labelText: 'Latitude (optional)'),
+              SizedBox(
+                height: 220,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: mapPoint,
+                      initialZoom: 13,
+                      onTap: (tapPos, point) {
+                        setState(() {
+                          mapPoint = point;
+                          latitudeC.text = point.latitude.toStringAsFixed(6);
+                          longitudeC.text = point.longitude.toStringAsFixed(6);
+                        });
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.flutter_event',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: mapPoint,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.location_pin, color: Colors.red, size: 36),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: longitudeC,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                decoration: const InputDecoration(labelText: 'Longitude (optional)'),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: mapsUrlC,
-                decoration: const InputDecoration(labelText: 'Google Maps URL (optional)'),
-              ),
+              Text('Lat: ${latitudeC.text} | Lng: ${longitudeC.text}', style: montserratRegular.copyWith(fontSize: 12)),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
