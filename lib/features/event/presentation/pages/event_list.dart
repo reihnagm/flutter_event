@@ -185,7 +185,7 @@ class EventListPageState extends State<EventListPage> {
                         final event = notifier.selectedEvents[i];
 
                         final profileUid = context.read<ProfileNotifier>().entity.userId;
-                        final canEdit = profileUid.isNotEmpty && event.author.uid == profileUid;
+                        final canEdit = profileUid!.isNotEmpty && event.author.uid == profileUid;
 
                         return Bouncing(
                           onPress: () {
@@ -212,6 +212,7 @@ class EventListPageState extends State<EventListPage> {
                               await _getData();
                             },
                             canEdit: canEdit,
+                            canDelete: canEdit,
                           ),
                         );
                       },
@@ -368,6 +369,7 @@ class _EventCard extends StatelessWidget {
   final VoidCallback onEdit;
   final Future<void> Function() onDelete;
   final bool canEdit;
+  final bool canDelete;
 
   const _EventCard({
     required this.name,
@@ -375,6 +377,7 @@ class _EventCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.canEdit,
+    required this.canDelete,
   });
 
   @override
@@ -419,10 +422,11 @@ class _EventCard extends StatelessWidget {
                       InkWell(onTap: onEdit, child: const Icon(Icons.edit, size: 14.0)),
                       const SizedBox(width: 15.0),
                     ],
-                    InkWell(
-                      onTap: () async => onDelete(),
-                      child: const Icon(Icons.delete, color: ColorResources.error, size: 14.0),
-                    ),
+                    if (canDelete)
+                      InkWell(
+                        onTap: () async => onDelete(),
+                        child: const Icon(Icons.delete, color: ColorResources.error, size: 14.0),
+                      ),
                   ],
                 ),
               ],
