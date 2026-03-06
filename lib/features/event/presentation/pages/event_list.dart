@@ -141,14 +141,14 @@ class EventListPageState extends State<EventListPage> {
                       ),
                       daysOfWeekHeight: 20.0,
                       calendarBuilders: CalendarBuilders(
-                        todayBuilder: (context, _, __) {
+                        todayBuilder: (context, _, _) {
                           return _DayCell(
                             text: "${DateTime.now().day}",
                             isToday: true,
                             isSelected: false,
                           );
                         },
-                        defaultBuilder: (context, day, __) {
+                        defaultBuilder: (context, day, _) {
                           return Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Text(
@@ -184,6 +184,9 @@ class EventListPageState extends State<EventListPage> {
                       itemBuilder: (context, i) {
                         final event = notifier.selectedEvents[i];
 
+                        final profileUid = context.read<ProfileNotifier>().entity.userId;
+                        final canEdit = profileUid.isNotEmpty && event.author.uid == profileUid;
+
                         return Bouncing(
                           onPress: () {
                             Navigator.pushNamed(
@@ -208,6 +211,7 @@ class EventListPageState extends State<EventListPage> {
                               await GDialog.eventDelete(id: event.uid);
                               await _getData();
                             },
+                            canEdit: canEdit,
                           ),
                         );
                       },
@@ -363,12 +367,14 @@ class _EventCard extends StatelessWidget {
   final List<EventImage> images;
   final VoidCallback onEdit;
   final Future<void> Function() onDelete;
+  final bool canEdit;
 
   const _EventCard({
     required this.name,
     required this.images,
     required this.onEdit,
     required this.onDelete,
+    required this.canEdit,
   });
 
   @override
@@ -409,8 +415,10 @@ class _EventCard extends StatelessWidget {
                 const SizedBox(width: 12.0),
                 Row(
                   children: [
-                    InkWell(onTap: onEdit, child: const Icon(Icons.edit, size: 14.0)),
-                    const SizedBox(width: 15.0),
+                    if (canEdit) ...[
+                      InkWell(onTap: onEdit, child: const Icon(Icons.edit, size: 14.0)),
+                      const SizedBox(width: 15.0),
+                    ],
                     InkWell(
                       onTap: () async => onDelete(),
                       child: const Icon(Icons.delete, color: ColorResources.error, size: 14.0),
