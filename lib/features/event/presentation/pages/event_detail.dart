@@ -93,6 +93,29 @@ class EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final eventImages = widget.event.images;
+    final sliderItems = eventImages.isNotEmpty
+        ? eventImages.map((image) {
+            return CachedNetworkImage(
+              imageUrl: image.path,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => Image.asset(
+                'assets/images/default_image.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
+            );
+          }).toList()
+        : [
+            Image.asset(
+              'assets/images/default_image.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+            ),
+          ];
+
     return Scaffold(
       body: NestedScrollView(
         controller: sc,
@@ -109,24 +132,7 @@ class EventDetailPageState extends State<EventDetailPage> {
                 titlePadding: EdgeInsets.zero,
                 background: CarouselSlider(
                   options: CarouselOptions(viewportFraction: 1.0, height: 265.0, autoPlay: true),
-                  items:
-                      (widget.event.images as List<EventImage>?)?.map((image) {
-                        return CachedNetworkImage(
-                          imageUrl: image.path,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Center(child: Icon(Icons.error)),
-                        );
-                      }).toList() ??
-                      [
-                        Container(
-                          color: Colors.grey,
-                          child: const Center(child: Text("No Images")),
-                        ),
-                      ],
+                  items: sliderItems,
                 ),
                 title: isTitleVisible
                     ? Container(
