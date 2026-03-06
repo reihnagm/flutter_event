@@ -28,6 +28,7 @@ import 'package:flutter_event/common/utils/custom_themes.dart';
 
 import 'package:flutter_event/features/event/presentation/provider/event_detail_notifier.dart';
 import 'package:flutter_event/features/event/presentation/provider/event_update_notifier.dart';
+import 'package:flutter_event/features/profile/presentation/provider/profile_notifier.dart';
 
 import 'package:flutter_event/shared/basewidgets/modal/modal.dart';
 
@@ -97,6 +98,14 @@ class FormEventEditPageState extends State<FormEventEditPage> {
     final entity = eventDetailNotifier.entity; // EventDetail?
     if (entity == null) {
       setState(() => isLoading = false);
+      return;
+    }
+
+    final profileUid = context.read<ProfileNotifier>().entity.userId;
+    final isOwner = profileUid.isNotEmpty && entity.author.uid == profileUid;
+    if (!isOwner) {
+      ShowSnackbar.snackbarErr('Kamu bukan pemilik event ini');
+      Navigator.pop(context);
       return;
     }
 
