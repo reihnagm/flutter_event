@@ -197,6 +197,7 @@ class EventListPageState extends State<EventListPage> {
                           },
                           child: _EventCard(
                             name: event.title.isNotEmpty ? event.title : "-",
+                            locationName: (event.locationName ?? '').trim(),
                             images: event.images,
                             onEdit: () {
                               Navigator.pushNamed(
@@ -365,6 +366,7 @@ class _DayCell extends StatelessWidget {
 
 class _EventCard extends StatelessWidget {
   final String name;
+  final String locationName;
   final List<EventImage> images;
   final VoidCallback onEdit;
   final Future<void> Function() onDelete;
@@ -373,6 +375,7 @@ class _EventCard extends StatelessWidget {
 
   const _EventCard({
     required this.name,
+    required this.locationName,
     required this.images,
     required this.onEdit,
     required this.onDelete,
@@ -409,10 +412,22 @@ class _EventCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    name,
-                    overflow: TextOverflow.ellipsis,
-                    style: montserratRegular.copyWith(fontWeight: FontWeight.bold, fontSize: 14.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        overflow: TextOverflow.ellipsis,
+                        style: montserratRegular.copyWith(fontWeight: FontWeight.bold, fontSize: 14.0),
+                      ),
+                      if (locationName.isNotEmpty)
+                        Text(
+                          locationName,
+                          overflow: TextOverflow.ellipsis,
+                          style: montserratRegular.copyWith(fontSize: 11.0, color: Colors.black54),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 12.0),
